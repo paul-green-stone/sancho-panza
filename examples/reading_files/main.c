@@ -5,17 +5,16 @@
 int main(int argc, char** argv) {
 
     char* buffer;
-    int status = 0;
 
     /* ======== */
 
-    if ((status = read_file2buffer("inpdut.txt", &buffer)) == 0) {
+    if (read_file2buffer("input.txt", &buffer) == 0) {
+
+        print_success(stdout, "%s", "file has been read\n");
+
         printf("%s", buffer);
     }
     else {
-
-        print_warning(stdout, "%s\n", "Missing the configuration file. Creating a default one...");
-
         return errno;
     }
 
@@ -23,7 +22,7 @@ int main(int argc, char** argv) {
 
     /* ======== */
 
-    return status;
+    return 0;
 }
 
 /* ================================================================ */
