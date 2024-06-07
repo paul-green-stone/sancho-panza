@@ -2,7 +2,7 @@
 OBJDIR := objects
 
 # Full names of object files
-OBJECTS	:= $(addprefix $(OBJDIR)/, core.o)
+OBJECTS	:= $(addprefix $(OBJDIR)/, core.o cJSON.o)
 
 # ================================================================ #
 
@@ -74,7 +74,10 @@ TARGET_SHARED := $(LIB_PREFIX)$(LIB_NAME)$(DLL_SUFFIX)
 # ================================================================ #
 
 # Setting the value of the variable CORE to the path of the `core.c` and `cJSON.c`
-CORE := $(addprefix source/core/, core.c cJSON.c)
+CORE := $(addprefix source/core/, core.c)
+
+# Setting the value of the variable cJSON to the path of the `cJSON.c`
+cJSON := $(addprefix source/core/, cJSON.c)
 
 # Setting the value of the variable WINDOW to the path of the `window.c`
 WINDOW = $(addprefix source/Window/, window.c)
@@ -98,6 +101,10 @@ $(TARGET_SHARED): $(OBJECTS)
 
 # Building the `core.o` object file from the CORE
 $(OBJDIR)/core.o: $(CORE) $(INCLUDE)
+	$(CC) $(ALL_CFLAGS) $(CFLAGS) -o $@ $<
+
+# Building the `cJSON.o` object file from the cJSON
+$(OBJDIR)/cJSON.o: $(cJSON) $(INCLUDE)
 	$(CC) $(ALL_CFLAGS) $(CFLAGS) -o $@ $<
 
 # ================================================================ #

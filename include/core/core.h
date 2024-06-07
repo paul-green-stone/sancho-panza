@@ -21,6 +21,9 @@
 /* Green text color */
 #define GREEN "\033[0;32m"
 
+/* Purple text color */
+#define PURPLE "\033[0;35m"
+
 /* ================================================================ */
 
 extern int read_file2buffer(const char* name, char** buffer);
@@ -36,6 +39,10 @@ extern void print_warning(FILE* stream, const char* format, ...);
 /* ================================ */
 
 extern void print_success(FILE* stream, const char* format, ...);
+
+/* ================================ */
+
+extern int JSON_parse(const char* buffer, cJSON** root);
 
 /* ================================================================ */
 

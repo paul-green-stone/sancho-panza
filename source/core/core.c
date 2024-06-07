@@ -92,3 +92,26 @@ void print_success(FILE* stream, const char* format, ...) {
 }
 
 /* ================================================================ */
+
+int JSON_parse(const char* buffer, cJSON** root) {
+
+    const char* error_ptr;
+
+    /* ======== */
+
+    if ((*root = cJSON_Parse(buffer)) == NULL) {
+
+        if ((error_ptr = cJSON_GetErrorPtr()) != NULL) {
+            
+            print_error(stderr, "before %s%s%s\n", PURPLE, error_ptr, WHITE);
+
+            return -1;
+        }
+    }
+
+    /* ======== */
+
+    return 0;
+}
+
+/* ================================================================ */
