@@ -2,6 +2,106 @@
 
 /* ================================================================ */
 
+static struct mapping_entry {
+
+    const char* name;
+    Uint32 flag;
+};
+
+struct mapping_entry SDL_Init_Flags[] = {
+    {"SDL_INIT_TIMER", SDL_INIT_TIMER},
+    {"SDL_INIT_AUDIO", SDL_INIT_AUDIO},
+    {"SDL_INIT_VIDEO", SDL_INIT_VIDEO},
+    {"SDL_INIT_JOYSTICK", SDL_INIT_JOYSTICK},
+    {"SDL_INIT_HAPTIC", SDL_INIT_HAPTIC},
+    {"SDL_INIT_GAMECONTROLLER", SDL_INIT_GAMECONTROLLER},
+    {"SDL_INIT_EVENTS", SDL_INIT_EVENTS},
+    {"SDL_INIT_EVERYTHING", SDL_INIT_EVERYTHING},
+    {"SDL_INIT_NOPARACHUTE", SDL_INIT_NOPARACHUTE}
+};
+
+/* ================================================================ */
+
+static int create_default_init_file(void) {
+
+    cJSON* root;
+    cJSON* flags;
+    cJSON* flag;
+
+    char* text = NULL;
+
+    size_t i;
+
+    char* default_SDL_flags[] = {"SDL_INIT_VIDEO", "SDL_INIT_EVENTS", "SDL_INIT_TIMER"};
+    size_t size = sizeof(default_SDL_flags) / sizeof(default_SDL_flags[0]);
+
+    errno = 0;
+
+    /* ================================ */
+
+     /* Creating a root object as a container for dependent elements */
+    if ((root = cJSON_CreateObject()) == NULL) {
+        
+        /* Most likely it's a memory allocation error */
+        goto ON_ERROR;
+    }
+
+    if ((flags = cJSON_CreateArray()) == NULL) {
+
+        /* Most likely it's a memory allocation error */
+        goto ON_ERROR;
+    }
+
+    /* No return value check? */
+    cJSON_AddItemToObject(root, "SDL", flags);
+
+    for (i = 0; i < size; i++) {
+
+        if ((flag = cJSON_CreateString(default_SDL_flags[i])) == NULL) {
+            goto ON_ERROR;
+        }
+
+        cJSON_AddItemToArray(flags, flag);
+    }
+
+    /* ================================ */
+
+    if ((text = cJSON_Print(root)) == NULL) {
+        goto ON_ERROR;
+    }
+
+    if (write_to_file(".config.json", text) != 0) {
+        goto ON_ERROR;
+    }
+
+    /* ================ */
+
+    free(text);
+    cJSON_Delete(root);
+
+    /* ======== */
+
+    return 0;
+
+    ON_ERROR:
+    {
+        #ifdef STRICT
+            print_error(stderr, "%s (%s%s%s)\n", "unable to create a default configuration file", RED, errno != 0 ? strerror(errno) : "", WHITE);
+        #endif
+
+        free(text);
+        cJSON_Delete(root);
+
+        /* ======== */
+
+        return -1;
+    }
+}
+
+/* ================================================================ */
+/* ================================================================ */
+/* ================================================================ */
+
 int read_file2buffer(const char* name, char** buffer) {
 
     FILE* file;
@@ -108,6 +208,45 @@ int JSON_parse(const char* buffer, cJSON** root) {
             return -1;
         }
     }
+
+    /* ======== */
+
+    return 0;
+}
+
+/* ================================================================ */
+
+int write_to_file(const char* name, const char* string) {
+
+    FILE* file;
+
+    /* ======== */
+
+    if (name == NULL) {
+
+        #ifdef STRICT
+            print_error(stderr, "%s [%s%s%s]\n", "filename is not specified", BLUE, __func__, WHITE);
+        #endif
+
+        /* ======== */
+
+        return -1;
+    }
+
+    if ((file = fopen(name, "w+")) == NULL) {
+
+        #ifdef STRICT
+            print_error(stderr, "%s [%s%s%s]\n", strerror(errno), BLUE, __func__, WHITE);
+        #endif
+
+        /* ======== */
+
+        return -1;
+    }
+
+    fprintf(file, "%s", string);
+
+    fclose(file);
 
     /* ======== */
 

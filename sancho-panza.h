@@ -1,7 +1,7 @@
 #ifndef SANCHO_PANZA_H
 #define SANCHO_PANZA_H
 
-//#define STRICT
+#define STRICT
 
 /* ================================================================ */
 

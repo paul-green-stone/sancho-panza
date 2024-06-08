@@ -24,6 +24,9 @@
 /* Purple text color */
 #define PURPLE "\033[0;35m"
 
+/* Blue text color */
+#define BLUE "\033[0;34m"
+
 /* ================================================================ */
 
 extern int read_file2buffer(const char* name, char** buffer);
@@ -43,6 +46,14 @@ extern void print_success(FILE* stream, const char* format, ...);
 /* ================================ */
 
 extern int JSON_parse(const char* buffer, cJSON** root);
+
+/* ================================ */
+
+extern int create_default_init_file(void);
+
+/* ================================ */
+
+extern int write_to_file(const char* name, const char* string);
 
 /* ================================================================ */
 
