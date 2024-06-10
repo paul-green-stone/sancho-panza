@@ -1,5 +1,7 @@
 #include "../../sancho-panza.h"
 
+#define __STRINGIFY(arg) #arg
+
 /* ================================================================ */
 
 static struct mapping_entry {
@@ -19,6 +21,52 @@ struct mapping_entry SDL_Init_Flags[] = {
     {"SDL_INIT_EVERYTHING", SDL_INIT_EVERYTHING},
     {"SDL_INIT_NOPARACHUTE", SDL_INIT_NOPARACHUTE}
 };
+
+/* ================================================================ */
+/* ================================================================ */
+
+static struct cJSON_checker_mapping_entry {
+
+    const int type;
+    const char* string;
+    cJSON_bool (*function)(const cJSON* const); 
+};
+
+/* ================================ */
+
+static struct cJSON_checker_mapping_entry cJSON_checkers[] = {
+
+    {ARRAY, "array", cJSON_IsArray},
+    {BOOLEAN, "boolean", cJSON_IsBool},
+    {OBJECT, "object", cJSON_IsObject},
+    {NUMBER, "number", cJSON_IsNumber},
+    {STRING, "string", cJSON_IsString}
+};
+
+/* ================================ */
+
+/* Size of the array of `cJSON_Is` checkers */
+static size_t size = sizeof(cJSON_checkers) / sizeof(cJSON_checkers[0]);
+
+/* ================================ */
+
+static const char* extract_checker_name(int type) {
+
+    size_t i;
+
+    /* ======== */
+
+    for (i = 0; i < size; i++) {
+
+        if (cJSON_checkers[i].type == type) {
+            return cJSON_checkers[i].string;
+        }
+    }
+
+    /* ======== */
+
+    return "unknown";
+}
 
 /* ================================================================ */
 
@@ -99,6 +147,8 @@ static int create_default_init_file(void) {
 }
 
 /* ================================================================ */
+
+/* ================================================================ */
 /* ================================================================ */
 /* ================================================================ */
 
@@ -117,6 +167,7 @@ int read_file2buffer(const char* name, char** buffer) {
             print_error(stderr, "%s [%s%s%s]\n", strerror(errno), CYAN, name, WHITE);
         #endif
 
+        /* ======== */
         return errno;
     }
 
@@ -137,6 +188,7 @@ int read_file2buffer(const char* name, char** buffer) {
 
         fclose(file);
 
+        /* ======== */
         return errno;
     }
 
@@ -205,6 +257,7 @@ int JSON_parse(const char* buffer, cJSON** root) {
             
             print_error(stderr, "before %s%s%s\n", PURPLE, error_ptr, WHITE);
 
+            /* ======== */
             return -1;
         }
     }
@@ -229,7 +282,6 @@ int write_to_file(const char* name, const char* string) {
         #endif
 
         /* ======== */
-
         return -1;
     }
 
@@ -240,7 +292,6 @@ int write_to_file(const char* name, const char* string) {
         #endif
 
         /* ======== */
-
         return -1;
     }
 
@@ -254,3 +305,56 @@ int write_to_file(const char* name, const char* string) {
 }
 
 /* ================================================================ */
+
+int extract_JSON_data(const cJSON* root, const char* name, int type, cJSON** data) {
+
+    cJSON_bool (*check)(const cJSON* const);
+
+    /* ======== */
+
+    if ((type < 0) || (type > size)) {
+
+        #ifdef STRICT
+            print_error(stderr, "unsupported type\n");
+        #endif
+
+        /* ======== */
+        return -1;
+    }
+
+    check = cJSON_checkers[type].function;
+
+    if (root == NULL) {
+        return -1;
+    }
+
+    if ((*data = cJSON_GetObjectItemCaseSensitive(root, name)) == NULL) {
+
+        #ifdef STRICT
+            print_error(stderr, "there is no such element in the document [%s%s%s]\n", PURPLE, name, WHITE);
+        #endif
+
+        /* ======== */
+        return -1;
+    }
+
+    if (check(*data) != 1) {
+
+        #ifdef STRICT
+            print_error(stderr, "the found element doesn't belong to the specified type [%s%s%s != %s]\n", PURPLE, name, WHITE, extract_checker_name(type));
+        #endif
+
+        *data = NULL;
+
+        /* ======== */
+        return -1;
+    }
+
+    /* ========*/
+
+    return 0;
+}
+
+/* ================================================================ */
+
+#undef STRICT

@@ -27,6 +27,16 @@
 /* Blue text color */
 #define BLUE "\033[0;34m"
 
+/* ================================ */
+
+enum checks {
+    ARRAY,
+    BOOLEAN,
+    OBJECT,
+    NUMBER,
+    STRING,
+};
+
 /* ================================================================ */
 
 extern int read_file2buffer(const char* name, char** buffer);
@@ -49,11 +59,11 @@ extern int JSON_parse(const char* buffer, cJSON** root);
 
 /* ================================ */
 
-extern int create_default_init_file(void);
+extern int write_to_file(const char* name, const char* string);
 
 /* ================================ */
 
-extern int write_to_file(const char* name, const char* string);
+extern int extract_JSON_data(const cJSON* root, const char* name, int type, cJSON** data);
 
 /* ================================================================ */
 
