@@ -1,6 +1,6 @@
 #include "../../sancho-panza.h"
 
-#define __STRINGIFY(arg) #arg
+#define DEFAULT_SDL ".config.json"
 
 /* ================================================================ */
 
@@ -22,6 +22,74 @@ struct mapping_entry SDL_Init_Flags[] = {
     {"SDL_INIT_NOPARACHUTE", SDL_INIT_NOPARACHUTE}
 };
 
+/* ================================ */
+
+/**
+ * The function maps a string to its corresponding (SDL) flag.
+ * To achieve this, it requires information about the table to search in,
+ * its size, and the string to be converted into a flag.
+ * If the flag is unrecognized, the function will return 0.
+ * 
+ * \param[in] lookup_table an array holding mappings of strings to flags
+ * \param[in] string_flag a string equivalent of the flag to be searched in the `lookup_table`
+ * \param[in] table_size number of elements, flags, in the `lookup_table`
+ * 
+ * \return The function returns a valid SDL flag upon success, and 0 to indicate an error if an unrecognized flag is encountered..
+ */
+static Uint32 SDL_lookup_flag(const struct mapping_entry* table, const char* string_flag, size_t table_size) {
+
+    size_t i;
+
+    /* ======== */
+
+    for (i = 0; i < table_size; i++) {
+
+        if (strcmp(string_flag, (table + i)->name) == 0) {
+            return (table + i)->flag;
+        }
+    }
+
+    /* ======== */
+
+    print_warning(stdout, "unrecognized flags (%s) are simply ignored\n", string_flag);
+
+    return 0;
+}
+
+/* ================================ */
+
+static Uint32 SDL_Init_get_flags(cJSON* root) {
+
+    Uint32 SDL_flags = 0;
+
+    cJSON* array;
+    size_t array_size;
+
+    size_t i;
+
+    /* ======== */
+
+    if (extract_JSON_data(root, "SDL", ARRAY, &array) != 0) {
+        return SDL_flags;
+    }
+
+    array_size = cJSON_GetArraySize(array);
+
+    for (i = 0; i < array_size; i++) {
+
+        /* Retrieve the next element from the given array */
+        cJSON* array_elm = cJSON_GetArrayItem(array, i);
+
+        /* Map a string to its equivalent flag */
+        SDL_flags |= SDL_lookup_flag(SDL_Init_Flags, array_elm->valuestring, sizeof(SDL_Init_Flags) / sizeof(SDL_Init_Flags[0]));
+    }
+
+    /* ======== */
+
+    return SDL_flags;
+}
+
+/* ================================================================ */
 /* ================================================================ */
 /* ================================================================ */
 
@@ -68,6 +136,8 @@ static const char* extract_checker_name(int type) {
     return "unknown";
 }
 
+/* ================================================================ */
+/* ================================================================ */
 /* ================================================================ */
 
 static int create_default_init_file(void) {
@@ -146,7 +216,7 @@ static int create_default_init_file(void) {
     }
 }
 
-/* ================================================================ */
+/* ================================ */
 
 /* ================================================================ */
 /* ================================================================ */
@@ -164,7 +234,7 @@ int read_file2buffer(const char* name, char** buffer) {
     if ((file = fopen(name, "r")) == NULL) {
 
         #ifdef STRICT
-            print_error(stderr, "%s [%s%s%s]\n", strerror(errno), CYAN, name, WHITE);
+            print_error(stderr, "%s (%s%s%s)\n", strerror(errno), CYAN, name, WHITE);
         #endif
 
         /* ======== */
@@ -356,5 +426,87 @@ int extract_JSON_data(const cJSON* root, const char* name, int type, cJSON** dat
 }
 
 /* ================================================================ */
+/* ================================================================ */
+/* ================================================================ */
 
+int SP_init(void) {
+
+    char* buffer;
+    cJSON* root;
+
+    Uint32 SDL_flags;
+
+    int status = 0;
+
+    /* ======== */
+
+    while ((status = read_file2buffer(DEFAULT_SDL, &buffer)) != 0) {
+
+        if (status == ENOENT) {
+
+            /* The error message from `read_file2buffer` is outputed as well (if STRICT) */
+            print_warning(stdout, "[%s%s%s] missing configuration file. Creating a default one...\n", BLUE, __func__, WHITE);
+        }
+
+        if ((status = create_default_init_file()) != 0) {
+
+            /* The error message from `read_file2buffer` is outputed (if STRICT) */
+            return -1;
+        }
+        else {
+            print_success(stdout, "file (%s%s%s) has been created\n", CYAN, DEFAULT_SDL, WHITE);
+        }
+    }
+
+    /* ================================ */
+
+    if ((status = JSON_parse(buffer, &root)) != 0) {
+
+        /* `JSON_parse` prints the error location to the console */
+        goto ON_ERROR;
+    }
+
+    SDL_flags = SDL_Init_get_flags(root);
+
+    /* ======================= Initializing SDL ======================= */
+    if ((status = SDL_Init(SDL_flags)) != 0) {
+
+        print_error(stderr, "unable to initialize SDL (%s%s%s)\n", RED, SDL_GetError(), WHITE);
+
+        goto ON_ERROR;
+    }
+
+    /* ================================ */
+
+    free(buffer);
+    cJSON_Delete(root);
+
+    /* ======== */
+
+    return status;
+
+    ON_ERROR:
+    {
+
+        free(buffer);
+        cJSON_Delete(root);
+
+        return -1;
+    }
+}
+
+/* ================================================================ */
+
+int SP_quit(void) {
+
+    SDL_Quit();
+
+    /* ======== */
+
+    return 0;
+}
+
+/* ================================================================ */
+
+#undef DEFAULT_SDL
 #undef STRICT

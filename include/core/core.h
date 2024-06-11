@@ -24,7 +24,7 @@
 /* Purple text color */
 #define PURPLE "\033[0;35m"
 
-/* Blue text color */
+/* Blue text color. Functions names */
 #define BLUE "\033[0;34m"
 
 /* ================================ */
@@ -64,6 +64,14 @@ extern int write_to_file(const char* name, const char* string);
 /* ================================ */
 
 extern int extract_JSON_data(const cJSON* root, const char* name, int type, cJSON** data);
+
+/* ================================ */
+
+extern int SP_init(void);
+
+/* ================================ */
+
+extern int SP_quit(void);
 
 /* ================================================================ */
 
