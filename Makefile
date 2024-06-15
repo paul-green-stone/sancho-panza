@@ -2,7 +2,7 @@
 OBJDIR := objects
 
 # Full names of object files
-OBJECTS	:= $(addprefix $(OBJDIR)/, core.o cJSON.o)
+OBJECTS	:= $(addprefix $(OBJDIR)/, core.o cJSON.o Window.o)
 
 # ================================================================ #
 
@@ -105,6 +105,10 @@ $(OBJDIR)/core.o: $(CORE) $(INCLUDE)
 
 # Building the `cJSON.o` object file from the cJSON
 $(OBJDIR)/cJSON.o: $(cJSON) $(INCLUDE)
+	$(CC) $(ALL_CFLAGS) $(CFLAGS) -o $@ $<
+
+# Building the `Window.o` object file from the WINDOW
+$(OBJDIR)/Window.o: $(WINDOW) $(INCLUDE)
 	$(CC) $(ALL_CFLAGS) $(CFLAGS) -o $@ $<
 
 # ================================================================ #

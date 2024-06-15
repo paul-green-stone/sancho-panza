@@ -4,11 +4,30 @@
 
 /* ================================================================ */
 
-static struct mapping_entry {
+/**
+ * A struct containing information necessary to create a window of `Window_t` type
+ */
+struct window_options {
 
+    Uint32 wflags;
+    Uint32 rflags;
+
+    int width;
+    int height;
+
+    char* title;
+};
+
+/* ================================================================ */
+/* ================= Here goes the look-up tables ================= */
+/* ================================================================ */
+
+static struct mapping_entry {
     const char* name;
     Uint32 flag;
 };
+
+/* ================================ */
 
 struct mapping_entry SDL_Init_Flags[] = {
     {"SDL_INIT_TIMER", SDL_INIT_TIMER},
@@ -23,6 +42,45 @@ struct mapping_entry SDL_Init_Flags[] = {
 };
 
 /* ================================ */
+
+struct mapping_entry SDL_CreateWindow_Flags[] = {
+    {"SDL_WINDOW_FULLSCREEN", SDL_WINDOW_FULLSCREEN},
+    {"SDL_WINDOW_OPENGL", SDL_WINDOW_OPENGL},
+    {"SDL_WINDOW_SHOWN", SDL_WINDOW_SHOWN},
+    {"SDL_WINDOW_HIDDEN", SDL_WINDOW_HIDDEN},
+    {"SDL_WINDOW_BORDERLESS", SDL_WINDOW_BORDERLESS},
+    {"SDL_WINDOW_RESIZABLE", SDL_WINDOW_RESIZABLE},
+    {"SDL_WINDOW_MINIMIZED", SDL_WINDOW_MAXIMIZED},
+    {"SDL_WINDOW_MOUSE_GRABBED", SDL_WINDOW_MOUSE_GRABBED},
+    {"SDL_WINDOW_INPUT_FOCUS", SDL_WINDOW_INPUT_FOCUS},
+    {"SDL_WINDOW_MOUSE_FOCUS", SDL_WINDOW_MOUSE_FOCUS},
+    {"SDL_WINDOW_FULLSCREEN_DESKTOP", ( SDL_WINDOW_FULLSCREEN | 0x00001000 )},
+    {"SDL_WINDOW_FOREIGN", SDL_WINDOW_FOREIGN},
+    {"SDL_WINDOW_ALLOW_HIGHDPI", SDL_WINDOW_ALLOW_HIGHDPI},
+    {"SDL_WINDOW_MOUSE_CAPTURE", SDL_WINDOW_MOUSE_CAPTURE},
+    {"SDL_WINDOW_ALWAYS_ON_TOP", SDL_WINDOW_ALWAYS_ON_TOP},
+    {"SDL_WINDOW_SKIP_TASKBAR", SDL_WINDOW_SKIP_TASKBAR},
+    {"SDL_WINDOW_UTILITY", SDL_WINDOW_UTILITY},
+    {"SDL_WINDOW_TOOLTIP", SDL_WINDOW_TOOLTIP},
+    {"SDL_WINDOW_POPUP_MENU", SDL_WINDOW_POPUP_MENU},
+    {"SDL_WINDOW_KEYBOARD_GRABBED", SDL_WINDOW_KEYBOARD_GRABBED},
+    {"SDL_WINDOW_VULKAN", SDL_WINDOW_VULKAN},
+    {"SDL_WINDOW_METAL", SDL_WINDOW_METAL},
+    {"SDL_WINDOW_INPUT_GRABBED", SDL_WINDOW_MOUSE_GRABBED}
+};
+
+/* ================================ */
+
+struct mapping_entry SDL_CreateRenderer_flags[] = {
+    {"SDL_RENDERER_SOFTWARE", SDL_RENDERER_SOFTWARE},
+    {"SDL_RENDERER_ACCELERATED", SDL_RENDERER_ACCELERATED},
+    {"SDL_RENDERER_PRESENTVSYNC", SDL_RENDERER_PRESENTVSYNC},
+    {"SDL_RENDERER_TARGETTEXTURE", SDL_RENDERER_TARGETTEXTURE}
+};
+
+/* ================================================================ */
+/* ================== Static, internal functions ================== */
+/* ================================================================ */
 
 /**
  * The function maps a string to its corresponding (SDL) flag.
@@ -53,11 +111,24 @@ static Uint32 SDL_lookup_flag(const struct mapping_entry* table, const char* str
 
     print_warning(stdout, "unrecognized flags (%s) are simply ignored\n", string_flag);
 
+    /* ======== */
+
     return 0;
 }
 
 /* ================================ */
 
+/**
+ * The function retrieves the flags required for the `SDL_Init` function to initialize the necessary subsystems.
+ * These flags are extracted from a `cJSON` object,
+ * which is obtained by reading a `.json` file into a buffer and parsing the buffer.
+ * Subsequently, the function returns the bitwise OR (|) of the flags after mapping
+ * their string equivalents to the corresponding SDL macros.
+ * 
+ * \param[in] root a string parsed by the `cJSON_Parse` function
+ * 
+ * \return The function returns the bitwise OR (|) of the flags after mapping their string equivalents to the corresponding SDL macros, or 0 if an error occurs. This result is used for initializing the default SDL subsystems.
+ */
 static Uint32 SDL_Init_get_flags(cJSON* root) {
 
     Uint32 SDL_flags = 0;
@@ -67,13 +138,17 @@ static Uint32 SDL_Init_get_flags(cJSON* root) {
 
     size_t i;
 
-    /* ======== */
+    /* ================================================================ */
+    /* ==================== Extracting `SDL` array ==================== */
+    /* ================================================================ */
 
     if (extract_JSON_data(root, "SDL", ARRAY, &array) != 0) {
         return SDL_flags;
     }
 
     array_size = cJSON_GetArraySize(array);
+
+    /* ================================ */
 
     for (i = 0; i < array_size; i++) {
 
@@ -87,6 +162,127 @@ static Uint32 SDL_Init_get_flags(cJSON* root) {
     /* ======== */
 
     return SDL_flags;
+}
+
+/* ================================ */
+
+/**
+ * The function retrieves information necessary for creating the application,
+ * including window flags (used in `SDL_CreateWindow`), renderer flags (used in `SDL_CreateRenderer`),
+ * window width, and window height, among other things.
+ * 
+ * \param[in] root parsed string (JSON)
+ * \param[out] options a pointer to the 'window_props' structure to store properties in
+ * 
+ * \return The function returns 0 on success, nonzero value on failure.
+ */
+static int get_window_options(cJSON* root, struct window_options* options) {
+
+    cJSON* object;
+    cJSON* data;
+    cJSON* array;
+
+    size_t array_size;
+    size_t i;
+
+    /* ================================================================ */
+    /* ================ Extracting the `window` object ================ */
+    /* ================================================================ */
+
+    if (extract_JSON_data(root, "Window", OBJECT, &object) != 0) {
+        /* `extract_JSON_data` prints the error message here if STRICT */
+
+        return -1;
+    }
+
+    /* ================================================================ */
+    /* ================= Extracting the window title ================== */
+    /* ================================================================ */
+
+    if (extract_JSON_data(object, "title", STRING, &data) != 0) {
+        /* `extract_JSON_data` prints the error message here if STRICT */
+
+        return -1;
+    }
+
+    /* == Memory allocation for the title. Do not forget to free it === */
+    if ((options->title = malloc(strlen(data->valuestring) * sizeof(char))) == NULL) {
+
+        print_error(stderr, "Sancho-Panza initialization failure (%s%s%s)\n", RED, strerror(errno), WHITE);
+
+        /* ======== */
+        return -1;
+    }
+
+    /* ====================== Copying the title ======================= */
+    strncpy(options->title, data->valuestring, strlen(data->valuestring));
+
+    /* ================================================================ */
+    /* ============ Extracting the window width and height ============ */
+    /* ================================================================ */
+
+    if (extract_JSON_data(object, "width", NUMBER, &data) != 0) {
+        /* `extract_JSON_data` prints the error message here if STRICT */
+
+        return -1;
+    }
+
+    options->width = data->valueint;
+
+    /* ================ */
+
+    if (extract_JSON_data(object, "height", NUMBER, &data) != 0) {
+        /* `extract_JSON_data` prints the error message here if STRICT */
+
+        return -1;
+    }
+
+    options->height = data->valueint;
+
+    /* ================================================================ */
+    /* ================= Extracting the window flags ================== */
+    /* ================================================================ */
+
+    if (extract_JSON_data(object, "wflags", ARRAY, &array) != 0) {
+        /* `extract_JSON_data` prints the error message here if STRICT */
+
+        return -1;
+    }
+
+    array_size = cJSON_GetArraySize(array);
+
+    for (i = 0; i < array_size; i++) {
+
+        /* Retrieve the next element from the given array */
+        cJSON* array_elm = cJSON_GetArrayItem(array, i);
+
+        /* Map a string to its equivalent flag */
+        options->wflags |= SDL_lookup_flag(SDL_CreateWindow_Flags, array_elm->valuestring, sizeof(SDL_CreateWindow_Flags) / sizeof(SDL_CreateWindow_Flags[0]));
+    }
+
+    /* ================================================================ */
+    /* ================ Extracting the renderer flags ================= */
+    /* ================================================================ */
+
+    /* Extracting the renderer flags */
+    if (extract_JSON_data(object, "rflags", ARRAY, &array) != 0) {
+        return -1;
+    }
+
+    array_size = cJSON_GetArraySize(array);
+
+    for (i = 0; i < array_size; i++) {
+
+        /* Retrieve the next element from the given array */
+        cJSON* array_elm = cJSON_GetArrayItem(array, i);
+
+        /* Map a string to its equivalent flag */
+        options->rflags |= SDL_lookup_flag(SDL_CreateRenderer_flags, array_elm->valuestring, sizeof(SDL_CreateRenderer_flags) / sizeof(SDL_CreateRenderer_flags[0]));
+    }
+
+    /* ======== */
+
+    return 0;
 }
 
 /* ================================================================ */
@@ -145,6 +341,7 @@ static int create_default_init_file(void) {
     cJSON* root;
     cJSON* flags;
     cJSON* flag;
+    cJSON* window;
 
     char* text = NULL;
 
@@ -153,20 +350,26 @@ static int create_default_init_file(void) {
     char* default_SDL_flags[] = {"SDL_INIT_VIDEO", "SDL_INIT_EVENTS", "SDL_INIT_TIMER"};
     size_t size = sizeof(default_SDL_flags) / sizeof(default_SDL_flags[0]);
 
+    char* default_window_flags[] = {"SDL_WINDOW_SHOWN"};
+    size_t w_size = sizeof(default_window_flags) / sizeof(default_window_flags[0]);
+
+    char* default_renderer_flags[] = {"SDL_RENDERER_ACCELERATED"};
+    size_t r_size = sizeof(default_renderer_flags) / sizeof(default_renderer_flags[0]);
+
     errno = 0;
 
     /* ================================ */
 
      /* Creating a root object as a container for dependent elements */
     if ((root = cJSON_CreateObject()) == NULL) {
-        
         /* Most likely it's a memory allocation error */
+
         goto ON_ERROR;
     }
 
     if ((flags = cJSON_CreateArray()) == NULL) {
-
         /* Most likely it's a memory allocation error */
+
         goto ON_ERROR;
     }
 
@@ -182,8 +385,83 @@ static int create_default_init_file(void) {
         cJSON_AddItemToArray(flags, flag);
     }
 
+    /* ================================================================ */
+    /* =================== Creating a window object =================== */
+    /* ================================================================ */
+
+    if ((window = cJSON_CreateObject()) == NULL) {
+        
+        /* Most likely it's a memory allocation error */
+        goto ON_ERROR;
+    }
+
+    flag = cJSON_CreateString("Sancho Panza");
+    cJSON_AddItemToObject(window, "title", flag);
+
+    /* ================================= */
+
+    flag = cJSON_CreateNumber(600);
+    cJSON_AddItemToObject(window, "width", flag);
+
+    flag = cJSON_CreateNumber(400);
+    cJSON_AddItemToObject(window, "height", flag);
+
+    /* ================================= */
+    /* Creating an array of window flags */
+    /* ================================= */
+
+    if ((flags = cJSON_CreateArray()) == NULL) {
+
+        /* Most likely it's a memory allocation error */
+        goto ON_ERROR;
+    }
+
+    for (i = 0; i < w_size; i++) {
+
+        if ((flag = cJSON_CreateString(default_window_flags[i])) == NULL) {
+            goto ON_ERROR;
+        }
+
+        cJSON_AddItemToArray(flags, flag);
+    }
+
+    /* Add window flags to the window object */
+    cJSON_AddItemToObject(window, "wflags", flags);
+
+    /* ================================================================ */
+    /* ================================================================ */
+    /* ================================================================ */
+
+    /* =================================== */
+    /* Creating an array of renderer flags */
+    /* =================================== */
+
+    if ((flags = cJSON_CreateArray()) == NULL) {
+
+        /* Most likely it's a memory allocation error */
+        goto ON_ERROR;
+    }
+
+    for (i = 0; i < r_size; i++) {
+
+        if ((flag = cJSON_CreateString(default_renderer_flags[i])) == NULL) {
+            goto ON_ERROR;
+        }
+
+        cJSON_AddItemToArray(flags, flag);
+    }
+
+    /* Add renderer flags to the window object */
+    cJSON_AddItemToObject(window, "rflags", flags);
+
     /* ================================ */
 
+    /* Add window object to the root object */
+    cJSON_AddItemToObject(root, "Window", window);
+
+    /* ================================ */
+
+    /* Convert to `char*`*/
     if ((text = cJSON_Print(root)) == NULL) {
         goto ON_ERROR;
     }
@@ -216,10 +494,8 @@ static int create_default_init_file(void) {
     }
 }
 
-/* ================================ */
-
 /* ================================================================ */
-/* ================================================================ */
+/* ============== Definitions of external functions =============== */
 /* ================================================================ */
 
 int read_file2buffer(const char* name, char** buffer) {
@@ -429,12 +705,13 @@ int extract_JSON_data(const cJSON* root, const char* name, int type, cJSON** dat
 /* ================================================================ */
 /* ================================================================ */
 
-int SP_init(void) {
+int SP_init(Window_t* w) {
 
     char* buffer;
     cJSON* root;
 
     Uint32 SDL_flags;
+    struct window_options opts = {0, 0, 0, 0, 0};
 
     int status = 0;
 
@@ -471,13 +748,26 @@ int SP_init(void) {
     /* ======================= Initializing SDL ======================= */
     if ((status = SDL_Init(SDL_flags)) != 0) {
 
-        print_error(stderr, "unable to initialize SDL (%s%s%s)\n", RED, SDL_GetError(), WHITE);
+        print_error(stderr, "Initialization failed. Unable to initialize SDL (%s%s%s)\n", RED, SDL_GetError(), WHITE);
 
+        goto ON_ERROR;
+    }
+
+    /* ===================== Getting window flags ===================== */
+    if (get_window_options(root, &opts) != 0) {
+
+        print_error(stderr, "Initialization failed. Unable to get window flags\n");
+
+        goto ON_ERROR;
+    }
+
+    if ((*w = Window_new(opts.title, opts.width, opts.height, opts.wflags, opts.rflags)) == NULL) {
         goto ON_ERROR;
     }
 
     /* ================================ */
 
+    free(opts.title);
     free(buffer);
     cJSON_Delete(root);
 
@@ -490,6 +780,7 @@ int SP_init(void) {
 
         free(buffer);
         cJSON_Delete(root);
+        SDL_Quit();
 
         return -1;
     }

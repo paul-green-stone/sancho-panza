@@ -4,7 +4,11 @@
 
 int main(int argc, char** argv) {
 
-    SP_init();
+    Window_t w;
+
+    SP_init(&w);
+
+    Window_destroy(&w);
 
     SP_quit();
 

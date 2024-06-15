@@ -6,13 +6,17 @@
 
 /* ================================================================ */
 
+typedef struct window* Window_t;
+
+/* ================================ */
+
 /* White text color */
 #define WHITE "\033[0;37m"
 
 /* Red text color */
 #define RED "\033[0;31m"
 
-/* Cyan text color */
+/* Cyan text color. File names */
 #define CYAN  "\033[0;36m"
 
 /* Yellow text color */
@@ -67,7 +71,7 @@ extern int extract_JSON_data(const cJSON* root, const char* name, int type, cJSO
 
 /* ================================ */
 
-extern int SP_init(void);
+extern int SP_init(Window_t* w);
 
 /* ================================ */
 
