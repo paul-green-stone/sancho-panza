@@ -82,6 +82,10 @@ int Window_destroy(Window_t* w) {
 
     *w = NULL;
 
+    #ifdef STRICT
+        print_success(stdout, "window has been destroyed\n");
+    #endif
+
     /* ======== */
 
     return 0;

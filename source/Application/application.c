@@ -34,9 +34,14 @@ int Application_destroy(App_t* app) {
     }
 
     Window_destroy(&(*app)->window);
+    Timer_destroy(&(*app)->timer);
     free(*app);
 
     *app = NULL;
+
+    #ifdef STRICT
+        print_success(stdout, "application has been destroyed\n");
+    #endif
 
     /* ======== */
     

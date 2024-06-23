@@ -8,6 +8,7 @@
 struct application {
 
     Window_t window;
+    Timer_t timer;
 
     int run;
 };

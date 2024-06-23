@@ -13,6 +13,8 @@ int main(int argc, char** argv) {
 
             while (app->run) {
 
+                Timer_tick(app->timer);
+
                 while (SDL_PollEvent(&event)) {
 
                     switch (event.type) {
@@ -25,11 +27,14 @@ int main(int argc, char** argv) {
 
                 /* ================================ */
 
-                Window_set_HEX(app->window, 0xff0000, 255);
+                if (Timer_is_ready(app->timer)) {
 
-                Window_clear(app->window);
+                    Window_set_HEX(app->window, 0xff0000, 255);
 
-                Window_update(app->window);
+                    Window_clear(app->window);
+
+                    Window_update(app->window);
+                }
             }
         }
 

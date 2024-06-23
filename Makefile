@@ -2,7 +2,7 @@
 OBJDIR := objects
 
 # Full names of object files
-OBJECTS	:= $(addprefix $(OBJDIR)/, core.o cJSON.o Window.o Application.o)
+OBJECTS	:= $(addprefix $(OBJDIR)/, core.o cJSON.o Window.o Application.o Timer.o)
 
 # ================================================================ #
 
@@ -85,6 +85,9 @@ WINDOW = $(addprefix source/Window/, window.c)
 # Setting the value of the variable APPLICATION to the path of the `application.c`
 APPLICATION = $(addprefix source/Application/, application.c)
 
+# Setting the value of the variable TIMER to the path of the `timer.c`
+TIMER = $(addprefix source/Timer/, timer.c)
+
 # ================================================================ #
 # ================================================================ #
 # ================================================================ #
@@ -116,6 +119,10 @@ $(OBJDIR)/Window.o: $(WINDOW) $(INCLUDE)
 
 # Building the `Application.o` object file from the APPLICATION
 $(OBJDIR)/Application.o: $(APPLICATION) $(INCLUDE)
+	$(CC) $(ALL_CFLAGS) $(CFLAGS) -o $@ $<
+
+# Building the `Timer.o` object file from the APPLICATION
+$(OBJDIR)/Timer.o: $(TIMER) $(INCLUDE)
 	$(CC) $(ALL_CFLAGS) $(CFLAGS) -o $@ $<
 
 # ================================================================ #

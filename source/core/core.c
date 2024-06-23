@@ -766,6 +766,13 @@ int SP_init(App_t* app) {
         goto ON_ERROR;
     }
 
+    if (((*app)->timer = Timer_new(1.0f / 60)) == NULL) {
+
+        Application_destroy(app);
+
+        goto ON_ERROR;
+    }
+
     /* ================================ */
 
     free(opts.title);
