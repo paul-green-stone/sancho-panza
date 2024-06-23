@@ -17,6 +17,7 @@
 
 #include "include/core/core.h"
 #include "include/Window/Window.h"
+#include "include/Application/Application.h"
 
 /* ================================================================ */
 

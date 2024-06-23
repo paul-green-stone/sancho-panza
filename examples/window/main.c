@@ -4,38 +4,36 @@
 
 int main(int argc, char** argv) {
 
-    Window_t w;
+    App_t app;
     SDL_Event event;
-
-    int quit = 0;
 
     /* ======== */
 
-    if (SP_init(&w) == 0) {
+    if (SP_init(&app) == 0) {
 
-            while (!quit) {
+            while (app->run) {
 
                 while (SDL_PollEvent(&event)) {
 
                     switch (event.type) {
 
                     case SDL_QUIT:
-                        quit = 1;
+                        app->run = 0;
                         break ;
                     }
                 }
 
                 /* ================================ */
 
-                Window_set_HEX(w, 0xff0000, 255);
+                Window_set_HEX(app->window, 0xff0000, 255);
 
-                Window_clear(w);
+                Window_clear(app->window);
 
-                Window_update(w);
+                Window_update(app->window);
             }
         }
 
-    Window_destroy(&w);
+    Application_destroy(&app);
 
     SP_quit();
 

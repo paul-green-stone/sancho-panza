@@ -2,7 +2,7 @@
 OBJDIR := objects
 
 # Full names of object files
-OBJECTS	:= $(addprefix $(OBJDIR)/, core.o cJSON.o Window.o)
+OBJECTS	:= $(addprefix $(OBJDIR)/, core.o cJSON.o Window.o Application.o)
 
 # ================================================================ #
 
@@ -82,6 +82,9 @@ cJSON := $(addprefix source/core/, cJSON.c)
 # Setting the value of the variable WINDOW to the path of the `window.c`
 WINDOW = $(addprefix source/Window/, window.c)
 
+# Setting the value of the variable APPLICATION to the path of the `application.c`
+APPLICATION = $(addprefix source/Application/, application.c)
+
 # ================================================================ #
 # ================================================================ #
 # ================================================================ #
@@ -109,6 +112,10 @@ $(OBJDIR)/cJSON.o: $(cJSON) $(INCLUDE)
 
 # Building the `Window.o` object file from the WINDOW
 $(OBJDIR)/Window.o: $(WINDOW) $(INCLUDE)
+	$(CC) $(ALL_CFLAGS) $(CFLAGS) -o $@ $<
+
+# Building the `Application.o` object file from the APPLICATION
+$(OBJDIR)/Application.o: $(APPLICATION) $(INCLUDE)
 	$(CC) $(ALL_CFLAGS) $(CFLAGS) -o $@ $<
 
 # ================================================================ #

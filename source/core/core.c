@@ -332,10 +332,6 @@ static const char* extract_checker_name(int type) {
     return "unknown";
 }
 
-/* ================================================================ */
-/* ================================================================ */
-/* ================================================================ */
-
 static int create_default_init_file(void) {
 
     cJSON* root;
@@ -702,10 +698,8 @@ int extract_JSON_data(const cJSON* root, const char* name, int type, cJSON** dat
 }
 
 /* ================================================================ */
-/* ================================================================ */
-/* ================================================================ */
 
-int SP_init(Window_t* w) {
+int SP_init(App_t* app) {
 
     char* buffer;
     cJSON* root;
@@ -761,7 +755,14 @@ int SP_init(Window_t* w) {
         goto ON_ERROR;
     }
 
-    if ((*w = Window_new(opts.title, opts.width, opts.height, opts.wflags, opts.rflags)) == NULL) {
+    if ((*app = Application_new()) == NULL) {
+        goto ON_ERROR;
+    }
+
+    if (((*app)->window = Window_new(opts.title, opts.width, opts.height, opts.wflags, opts.rflags)) == NULL) {
+
+        Application_destroy(app);
+
         goto ON_ERROR;
     }
 
