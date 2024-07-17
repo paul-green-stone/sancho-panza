@@ -6,7 +6,7 @@ App_t Application_new(void) {
 
     App_t app;
 
-    /* ======== */
+    /* ================ */
 
     if ((app = calloc(1, sizeof(struct application))) == NULL) {
 

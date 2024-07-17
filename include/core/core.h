@@ -32,49 +32,39 @@ typedef struct application* App_t;
 /* Blue text color. Functions names */
 #define BLUE "\033[0;34m"
 
-/* ================================ */
-
-enum checks {
-    ARRAY,
-    BOOLEAN,
-    OBJECT,
-    NUMBER,
-    STRING,
-};
-
 /* ================================================================ */
 
 extern int read_file2buffer(const char* name, char** buffer);
 
-/* ================================ */
+/* ================================================================ */
 
 extern void print_error(FILE* stream, const char* format, ...);
 
-/* ================================ */
+/* ================================================================ */
 
 extern void print_warning(FILE* stream, const char* format, ...);
 
-/* ================================ */
+/* ================================================================ */
 
 extern void print_success(FILE* stream, const char* format, ...);
 
-/* ================================ */
+/* ================================================================ */
 
 extern int JSON_parse(const char* buffer, cJSON** root);
 
-/* ================================ */
+/* ================================================================ */
 
 extern int write_to_file(const char* name, const char* string);
 
-/* ================================ */
+/* ================================================================ */
 
 extern int extract_JSON_data(const cJSON* root, const char* name, int type, cJSON** data);
 
-/* ================================ */
+/* ================================================================ */
 
 extern int SP_init(App_t* app);
 
-/* ================================ */
+/* ================================================================ */
 
 extern int SP_quit(void);
 

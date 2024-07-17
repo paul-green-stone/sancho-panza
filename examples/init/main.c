@@ -4,13 +4,13 @@
 
 int main(int argc, char** argv) {
 
-    Window_t w;
+    App_t app;
 
-    SP_init(&w);
+    SP_init(&app);
 
-    Window_destroy(&w);
+    //Window_destroy(&w);
 
-    SP_quit();
+    //SP_quit();
 
     /* ======== */
 

@@ -12,13 +12,17 @@ struct window {
 
 typedef struct window* Window_t;
 
-/* ================================ */
+/* ================================================================ */
 
 Window_t Window_new(const char* title, int w, int h, Uint32 wflags, Uint32 rflags) {
 
     Window_t new_window;
 
-    /* ======== */
+    /* ================ */
+    
+    /* ================================================ */
+    /* ============== Memory Allocation =============== */
+    /* ================================================ */
 
     if ((new_window = calloc(1, sizeof(struct window))) == NULL) {
         
@@ -30,9 +34,11 @@ Window_t Window_new(const char* title, int w, int h, Uint32 wflags, Uint32 rflag
         return NULL;
     }
 
-    /* ================================ */
+    /* ================================================ */
+    /* ============= SDL_Window Creation ============== */
+    /* ================================================ */
 
-    if ((new_window->w = SDL_CreateWindow(title ? title : "Sancho-Panza", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, wflags)) == NULL) {
+    if ((new_window->w = SDL_CreateWindow((title != NULL) ? title : "Sancho-Panza", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, wflags)) == NULL) {
 
         #ifdef STRICT
             print_error(stderr, "[%s%s%s] %s\n", BLUE, "SDL_CreateWindow", WHITE, strerror(errno));
@@ -44,7 +50,9 @@ Window_t Window_new(const char* title, int w, int h, Uint32 wflags, Uint32 rflag
         return NULL;
     }
 
-    /* ================================ */
+    /* ================================================ */
+    /* ============ SDL_Renderer Creation ============= */
+    /* ================================================ */
 
     if ((new_window->r = SDL_CreateRenderer(new_window->w, -1, rflags)) == NULL) {
 
