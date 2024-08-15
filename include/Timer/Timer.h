@@ -20,31 +20,31 @@ struct timer {
     double time;
 };
 
-typedef struct timer* Timer_t;
+typedef struct timer Timer;
 
 /* ================================================================ */
 
-extern Timer_t Timer_new(double t);
+extern Timer* Timer_new(double t);
 
 /* ================================================================ */
 
-extern int Timer_destroy(Timer_t* t);
+extern int Timer_destroy(Timer** t);
 
 /* ================================================================ */
 
-extern int Timer_set(const Timer_t t, double v);
+extern int Timer_set(Timer* t, double v);
 
 /* ================================================================ */
 
-extern int Timer_is_ready(const Timer_t t);
+extern int Timer_is_ready(const Timer* t);
 
 /* ================================================================ */
 
-extern int Timer_reset(const Timer_t t);
+extern int Timer_reset(Timer* t);
 
 /* ================================================================ */
 
-extern void Timer_tick(const Timer_t t);
+extern void Timer_tick(Timer* t);
 
 /* ================================================================ */
 

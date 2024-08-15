@@ -2,9 +2,9 @@
 
 /* ================================================================ */
 
-Timer_t Timer_new(double t) {
+Timer* Timer_new(double t) {
 
-    Timer_t timer;
+    Timer* timer;
 
     /* ======== */
 
@@ -28,7 +28,7 @@ Timer_t Timer_new(double t) {
 
 /* ================================================================ */
 
-int Timer_destroy(Timer_t* t) {
+int Timer_destroy(Timer** t) {
 
     if ((t == NULL) || (*t == NULL)) {
         return -1;
@@ -48,7 +48,7 @@ int Timer_destroy(Timer_t* t) {
 
 /* ================================================================ */
 
-int Timer_set(const Timer_t t, double v) {
+int Timer_set(Timer* t, double v) {
 
     if (t == NULL) {
         return -1;
@@ -65,13 +65,13 @@ int Timer_set(const Timer_t t, double v) {
 
 /* ================================================================ */
 
-int Timer_is_ready(const Timer_t t) {
+int Timer_is_ready(const Timer* t) {
     return (t != NULL) ? t->acc >= t->time : 0;
 }
 
 /* ================================================================ */
 
-int Timer_reset(const Timer_t t) {
+int Timer_reset(Timer* t) {
 
     if (t == NULL) {
         return -1;
@@ -84,7 +84,7 @@ int Timer_reset(const Timer_t t) {
 
 /* ================================================================ */
 
-void Timer_tick(const Timer_t t) {
+void Timer_tick(Timer* t) {
 
     /* Current frame start */
     uint64_t current_ticks = 0;

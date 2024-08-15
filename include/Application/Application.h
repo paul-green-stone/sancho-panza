@@ -8,7 +8,7 @@
 struct application {
 
     Window* window;
-    Timer_t timer;
+    Timer* timer;
 
     int run;
 };
