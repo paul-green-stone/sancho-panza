@@ -2,11 +2,10 @@
 #define SANCHO_PANZA_CORE_H
 
 #include "../../sancho-panza.h"
-#include "cJSON.h"
 
 /* ================================================================ */
 
-typedef struct window* Window_t;
+typedef struct window Window;
 typedef struct application* App_t;
 
 /* ================================ */
@@ -31,6 +30,16 @@ typedef struct application* App_t;
 
 /* Blue text color. Functions names */
 #define BLUE "\033[0;34m"
+
+/* ================================================================ */
+
+enum checks {
+    ARRAY,
+    BOOLEAN,
+    OBJECT,
+    NUMBER,
+    STRING,
+};
 
 /* ================================================================ */
 

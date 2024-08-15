@@ -10,13 +10,13 @@ struct window {
     SDL_Color color;
 };
 
-typedef struct window* Window_t;
+typedef struct window Window;
 
 /* ================================================================ */
 
-Window_t Window_new(const char* title, int w, int h, Uint32 wflags, Uint32 rflags) {
+Window* Window_new(const char* title, int w, int h, Uint32 wflags, Uint32 rflags) {
 
-    Window_t new_window;
+    Window* new_window;
 
     /* ================ */
     
@@ -78,7 +78,7 @@ Window_t Window_new(const char* title, int w, int h, Uint32 wflags, Uint32 rflag
 
 /* ================================================================ */
 
-int Window_destroy(Window_t* w) {
+int Window_destroy(Window** w) {
 
     if ((w == NULL) || (*w == NULL)) {
         return -1;
@@ -101,19 +101,19 @@ int Window_destroy(Window_t* w) {
 
 /* ================================================================ */
 
-void Window_update(const Window_t w) {
+void Window_update(const Window* w) {
     SDL_RenderPresent(w->r);
 }
 
 /* ================================================================ */
 
-int Window_clear(const Window_t w) {
+int Window_clear(const Window* w) {
     return SDL_RenderClear(w->r);
 }
 
 /* ================================================================ */
 
-int Window_set_HEX(Window_t const w, Uint32 color, Uint8 alpha) {
+int Window_set_HEX(Window* const w, Uint32 color, Uint8 alpha) {
 
     w->color = (SDL_Color) {(color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, alpha};
 
@@ -124,7 +124,7 @@ int Window_set_HEX(Window_t const w, Uint32 color, Uint8 alpha) {
 
 /* ================================================================ */
 
-int Window_set_RGBA(Window_t const w, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha) {
+int Window_set_RGBA(Window* const w, Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha) {
 
     w->color = (SDL_Color) {red, green, blue, alpha};
 

@@ -1,10 +1,141 @@
 #include "../../sancho-panza.h"
-#include "../../include/core/entries.h"
-#include "../../include/core/cJSON_mapping_entries.h"
 
 #define DEFAULT_SDL ".config.json"
 
 /* ================================================================ */
+/* ============= Here are the arrays that map strings ============= */
+/* =============== to their corresponding SDL flags =============== */
+/* ================================================================ */
+
+struct mapping_entry {
+    const char* name;
+    Uint32 flag;
+};
+
+/* ================================================================ */
+/* ======================== SDL_Init Flags ======================== */
+/* ================================================================ */
+
+static struct mapping_entry SDL_Init_Flags[] = {
+    {"SDL_INIT_TIMER", SDL_INIT_TIMER},
+    {"SDL_INIT_AUDIO", SDL_INIT_AUDIO},
+    {"SDL_INIT_VIDEO", SDL_INIT_VIDEO},
+    {"SDL_INIT_JOYSTICK", SDL_INIT_JOYSTICK},
+    {"SDL_INIT_HAPTIC", SDL_INIT_HAPTIC},
+    {"SDL_INIT_GAMECONTROLLER", SDL_INIT_GAMECONTROLLER},
+    {"SDL_INIT_EVENTS", SDL_INIT_EVENTS},
+    {"SDL_INIT_EVERYTHING", SDL_INIT_EVERYTHING},
+    {"SDL_INIT_NOPARACHUTE", SDL_INIT_NOPARACHUTE}
+};
+
+/* ================================================================ */
+/* ==================== SDL_CreateWindow Flags ==================== */
+/* ================================================================ */
+
+static struct mapping_entry SDL_CreateWindow_Flags[] = {
+    {"SDL_WINDOW_FULLSCREEN", SDL_WINDOW_FULLSCREEN},
+    {"SDL_WINDOW_OPENGL", SDL_WINDOW_OPENGL},
+    {"SDL_WINDOW_SHOWN", SDL_WINDOW_SHOWN},
+    {"SDL_WINDOW_HIDDEN", SDL_WINDOW_HIDDEN},
+    {"SDL_WINDOW_BORDERLESS", SDL_WINDOW_BORDERLESS},
+    {"SDL_WINDOW_RESIZABLE", SDL_WINDOW_RESIZABLE},
+    {"SDL_WINDOW_MINIMIZED", SDL_WINDOW_MAXIMIZED},
+    {"SDL_WINDOW_MOUSE_GRABBED", SDL_WINDOW_MOUSE_GRABBED},
+    {"SDL_WINDOW_INPUT_FOCUS", SDL_WINDOW_INPUT_FOCUS},
+    {"SDL_WINDOW_MOUSE_FOCUS", SDL_WINDOW_MOUSE_FOCUS},
+    {"SDL_WINDOW_FULLSCREEN_DESKTOP", ( SDL_WINDOW_FULLSCREEN | 0x00001000 )},
+    {"SDL_WINDOW_FOREIGN", SDL_WINDOW_FOREIGN},
+    {"SDL_WINDOW_ALLOW_HIGHDPI", SDL_WINDOW_ALLOW_HIGHDPI},
+    {"SDL_WINDOW_MOUSE_CAPTURE", SDL_WINDOW_MOUSE_CAPTURE},
+    {"SDL_WINDOW_ALWAYS_ON_TOP", SDL_WINDOW_ALWAYS_ON_TOP},
+    {"SDL_WINDOW_SKIP_TASKBAR", SDL_WINDOW_SKIP_TASKBAR},
+    {"SDL_WINDOW_UTILITY", SDL_WINDOW_UTILITY},
+    {"SDL_WINDOW_TOOLTIP", SDL_WINDOW_TOOLTIP},
+    {"SDL_WINDOW_POPUP_MENU", SDL_WINDOW_POPUP_MENU},
+    {"SDL_WINDOW_KEYBOARD_GRABBED", SDL_WINDOW_KEYBOARD_GRABBED},
+    {"SDL_WINDOW_VULKAN", SDL_WINDOW_VULKAN},
+    {"SDL_WINDOW_METAL", SDL_WINDOW_METAL},
+    {"SDL_WINDOW_INPUT_GRABBED", SDL_WINDOW_MOUSE_GRABBED}
+};
+
+/* ================================================================ */
+/* =================== SDL_CreateRenderer Flags =================== */
+/* ================================================================ */
+
+static struct mapping_entry SDL_CreateRenderer_flags[] = {
+    {"SDL_RENDERER_SOFTWARE", SDL_RENDERER_SOFTWARE},
+    {"SDL_RENDERER_ACCELERATED", SDL_RENDERER_ACCELERATED},
+    {"SDL_RENDERER_PRESENTVSYNC", SDL_RENDERER_PRESENTVSYNC},
+    {"SDL_RENDERER_TARGETTEXTURE", SDL_RENDERER_TARGETTEXTURE}
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 
+ * This structure defines a mapping entry for cJSON checkers.
+ * Each entry associates a specific type with a corresponding string
+ * representation and a function pointer that checks whether a cJSON 
+ * object matches the specified type.
+ */
+struct cJSON_checker_mapping_entry {
+    
+    /* The type identifier (e.g., ARRAY, BOOLEAN, etc.) */
+    const int type;
+
+    /* The string representation of the type */
+    const char* string;
+    
+    /* Pointer to the function that checks the type */
+    cJSON_bool (*function)(const cJSON* const);
+};
+
+/* ================================================================ */
+
+/* 
+ * The cJSON_checkers array contains a collection of mapping entries.
+ * Each entry in this array links a type identifier to its string 
+ * representation and the corresponding function that verifies the 
+ * type of a cJSON object. This mapping is useful for dynamically 
+ * checking the types of JSON elements during parsing or validation.
+ */
+struct cJSON_checker_mapping_entry cJSON_checkers[] = {
+
+    {ARRAY, "array", cJSON_IsArray},
+    {BOOLEAN, "boolean", cJSON_IsBool},
+    {OBJECT, "object", cJSON_IsObject},
+    {NUMBER, "number", cJSON_IsNumber},
+    {STRING, "string", cJSON_IsString}
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 struct window_options {
     
@@ -26,8 +157,6 @@ struct window_options {
 static Uint32 SDL_lookup_flag(const struct mapping_entry* table, const char* string_flag, size_t table_size) {
 
     size_t i;
-
-    /* ================ */
     
     /* ======================================== */
     /* ====== Traversing the given table ====== */
@@ -422,6 +551,21 @@ static int create_default_init_file(void) {
         return -1;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* ================================================================ */
 /* ============== Definitions of external functions =============== */

@@ -7,7 +7,7 @@
 
 struct application {
 
-    Window_t window;
+    Window* window;
     Timer_t timer;
 
     int run;
