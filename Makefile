@@ -73,20 +73,20 @@ TARGET_SHARED := $(LIB_PREFIX)$(LIB_NAME)$(DLL_SUFFIX)
 # ================================================================ #
 # ================================================================ #
 
-# Setting the value of the variable CORE to the path of the `core.c` and `cJSON.c`
+# Setting the value of the variable CORE to the path of the `core.c`
 CORE := $(addprefix source/core/, core.c)
 
 # Setting the value of the variable cJSON to the path of the `cJSON.c`
 cJSON := $(addprefix source/core/, cJSON.c)
 
 # Setting the value of the variable WINDOW to the path of the `window.c`
-WINDOW = $(addprefix source/Window/, window.c)
+WINDOW := $(addprefix source/Window/, window.c)
 
 # Setting the value of the variable APPLICATION to the path of the `application.c`
-APPLICATION = $(addprefix source/Application/, application.c)
+APPLICATION := $(addprefix source/Application/, application.c)
 
 # Setting the value of the variable TIMER to the path of the `timer.c`
-TIMER = $(addprefix source/Timer/, timer.c)
+TIMER := $(addprefix source/Timer/, timer.c)
 
 # ================================================================ #
 # ================================================================ #

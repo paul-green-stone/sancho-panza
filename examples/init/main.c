@@ -8,13 +8,11 @@ int main(int argc, char** argv) {
 
     SP_init(&app);
 
-    //Window_destroy(&w);
+    Application_destroy(&app);
 
-    //SP_quit();
+    SP_quit();
 
     /* ======== */
-
-    // "SDL_INIT_VIDEO", "SDL_INIT_EVENTS", "SDL_INIT_TIMER"
 
     return 0;
 }

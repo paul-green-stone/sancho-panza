@@ -15,6 +15,7 @@
 
 /* ======== */
 
+#include "include/core/cJSON.h"
 #include "include/core/core.h"
 #include "include/Timer/Timer.h"
 #include "include/Window/Window.h"
