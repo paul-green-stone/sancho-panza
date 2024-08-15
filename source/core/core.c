@@ -812,7 +812,7 @@ int extract_JSON_data(const cJSON* root, const char* name, int type, cJSON** dat
 
 /* ================================================================ */
 
-int SP_init(App_t* app) {
+int SP_init(App** app) {
 
     char* buffer;
     cJSON* root;

@@ -13,15 +13,15 @@ struct application {
     int run;
 };
 
-typedef struct application* App_t;
+typedef struct application App;
 
 /* ================================================================ */
 
-extern App_t Application_new(void);
+extern App* Application_new(void);
 
 /* ================================================================ */
 
-extern int Application_destroy(App_t* app);
+extern int Application_destroy(App** app);
 
 /* ================================================================ */
 

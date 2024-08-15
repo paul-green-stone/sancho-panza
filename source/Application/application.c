@@ -2,9 +2,9 @@
 
 /* ================================================================ */
 
-App_t Application_new(void) {
+App* Application_new(void) {
 
-    App_t app;
+    App* app;
 
     /* ================ */
 
@@ -27,7 +27,7 @@ App_t Application_new(void) {
 
 /* ================================================================ */
 
-int Application_destroy(App_t* app) {
+int Application_destroy(App** app) {
 
     if ((app == NULL) || (*app == NULL)) {
         return -1;

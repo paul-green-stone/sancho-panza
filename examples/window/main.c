@@ -4,7 +4,7 @@
 
 int main(int argc, char** argv) {
 
-    App_t app;
+    App* app;
     SDL_Event event;
 
     /* ======== */

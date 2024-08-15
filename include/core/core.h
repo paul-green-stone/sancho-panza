@@ -6,7 +6,7 @@
 /* ================================================================ */
 
 typedef struct window Window;
-typedef struct application* App_t;
+typedef struct application App;
 
 /* ================================ */
 
@@ -71,7 +71,7 @@ extern int extract_JSON_data(const cJSON* root, const char* name, int type, cJSO
 
 /* ================================================================ */
 
-extern int SP_init(App_t* app);
+extern int SP_init(App** app);
 
 /* ================================================================ */
 
