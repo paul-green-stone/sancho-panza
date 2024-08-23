@@ -19,6 +19,7 @@
 #include "include/core/core.h"
 #include "include/Timer/Timer.h"
 #include "include/Window/Window.h"
+#include "include/Grid/Grid.h"
 #include "include/InputManager/Manager.h"
 #include "include/Application/Application.h"
 

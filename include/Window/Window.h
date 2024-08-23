@@ -5,9 +5,15 @@
 
 /* ================================================================ */
 
-typedef struct window Window;
+typedef struct window {
 
-/* ================================================================ */
+    SDL_Window* w;
+    SDL_Renderer* r;
+
+    SDL_Color color;
+} Window;
+
+/* ================================ */
 
 extern Window* Window_new(const char* title, int w, int h, Uint32 flags, Uint32 rflags);
 

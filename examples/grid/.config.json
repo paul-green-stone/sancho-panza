@@ -1,0 +1,10 @@
+{
+	"SDL":	["SDL_INIT_VIDEO", "SDL_INIT_EVENTS", "SDL_INIT_TIMER"],
+	"Window":	{
+		"title":	"Sancho Panza",
+		"width":	600,
+		"height":	400,
+		"wflags":	["SDL_WINDOW_SHOWN"],
+		"rflags":	["SDL_RENDERER_ACCELERATED"]
+	}
+}

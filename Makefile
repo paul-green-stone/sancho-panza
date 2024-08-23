@@ -2,7 +2,7 @@
 OBJDIR := objects
 
 # Full names of object files
-OBJECTS	:= $(addprefix $(OBJDIR)/, core.o cJSON.o Window.o Application.o Timer.o Manager.o)
+OBJECTS	:= $(addprefix $(OBJDIR)/, core.o cJSON.o Window.o Application.o Timer.o Manager.o Grid.o)
 
 # ================================================================ #
 
@@ -91,6 +91,8 @@ TIMER := $(addprefix source/Timer/, timer.c)
 # Setting the value of the variable MANAGER to the path of the `manager.c`
 MANAGER := $(addprefix source/InputManager/, manager.c)
 
+# Setting the value of the variable GRID to the path of the `manager.c`
+GRID := $(addprefix source/Grid/, grid.c)
 # ================================================================ #
 # ================================================================ #
 # ================================================================ #
@@ -130,6 +132,10 @@ $(OBJDIR)/Timer.o: $(TIMER) $(INCLUDE)
 
 # Building the `Manager.o` object file from the MANAGER
 $(OBJDIR)/Manager.o: $(MANAGER) $(INCLUDE)
+	$(CC) $(ALL_CFLAGS) $(CFLAGS) -o $@ $<
+
+# Building the `Grid.o` object file from the GRID
+$(OBJDIR)/Grid.o: $(GRID) $(INCLUDE)
 	$(CC) $(ALL_CFLAGS) $(CFLAGS) -o $@ $<
 
 # ================================================================ #

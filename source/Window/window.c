@@ -2,18 +2,6 @@
 
 /* ================================================================ */
 
-struct window {
-
-    SDL_Window* w;
-    SDL_Renderer* r;
-
-    SDL_Color color;
-};
-
-typedef struct window Window;
-
-/* ================================================================ */
-
 Window* Window_new(const char* title, int w, int h, Uint32 wflags, Uint32 rflags) {
 
     Window* new_window;
