@@ -18,6 +18,11 @@ App* Application_new(void) {
         return NULL;
     }
 
+    /* Initialize the Input Manager */
+    memset(app->imanager.key_states, 0, sizeof(app->imanager.key_states));
+    memset(app->imanager.previous_key_states, 0, sizeof(app->imanager.previous_key_states));
+    memset(app->imanager.mouse_BTN_states, 0, sizeof(app->imanager.mouse_BTN_states));
+
     app->run = 1;
 
     /* ======== */

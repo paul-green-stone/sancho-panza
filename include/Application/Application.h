@@ -9,6 +9,7 @@ struct application {
 
     Window* window;
     Timer* timer;
+    Input_Manager imanager;
 
     int run;
 };
