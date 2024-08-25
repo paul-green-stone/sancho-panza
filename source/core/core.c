@@ -936,5 +936,117 @@ int SP_quit(void) {
 
 /* ================================================================ */
 
+cJSON* serialize__SDL_Color(const SDL_Color* color) {
+
+    cJSON* serialized_color = NULL;
+
+    /* ================ */
+
+    if (color == NULL) {
+        return NULL;
+    }
+
+    if ((serialized_color = cJSON_CreateObject()) == NULL) {
+        return NULL;
+    }
+
+    /* ======== Red component ======== */
+    if (cJSON_AddNumberToObject(serialized_color, "r", color->r) == NULL) {
+        goto END;
+    }
+
+    /* ======= Green component ======= */
+    if (cJSON_AddNumberToObject(serialized_color, "g", color->g) == NULL) {
+        goto END;
+    }
+
+    /* ======= Blue component ======== */
+    if (cJSON_AddNumberToObject(serialized_color, "b", color->b) == NULL) {
+        goto END;
+    }
+
+    /* ======= Alpha component ======= */
+    if (cJSON_AddNumberToObject(serialized_color, "a", color->a) == NULL) {
+        goto END;
+    }
+
+    /* ======== */
+
+    return serialized_color;
+
+    { END:
+        cJSON_Delete(serialized_color);
+        serialized_color = NULL;
+
+        return serialized_color; // NULL
+    }
+}
+
+/* ================================================================ */
+
+int deserialize__SDL_Color(const cJSON* root, SDL_Color* color, const char* label) {
+
+    cJSON* _color = NULL;
+    cJSON* component = NULL;
+
+    /* ================ */
+
+    if (root == NULL) {
+        return -1;
+    }
+
+    if (color == NULL) {
+        return -1;
+    }
+
+    /* ================================================ */
+    /* ========= Extracting the color object ========== */
+    /* ================================================ */
+
+    if (extract_JSON_data(root, label, OBJECT, &_color) != 0) {
+        return -1;
+    }
+
+    /* ======================================== */
+    /* === Extracting the color components ==== */
+    /* ======================================== */
+
+    /* RED */
+    if (extract_JSON_data(_color, "r", NUMBER, &component) != 0) {
+        goto END;
+    }
+    color->r = (Uint8) component->valuedouble;
+
+    /* GREEN */
+    if (extract_JSON_data(_color, "g", NUMBER, &component) != 0) {
+        goto END;
+    }
+    color->g = (Uint8) component->valuedouble;
+
+    /* BLUE */
+    if (extract_JSON_data(_color, "b", NUMBER, &component) != 0) {
+        goto END;
+    }
+    color->b = (Uint8) component->valuedouble;
+
+    /* ALPHA */
+    if (extract_JSON_data(_color, "a", NUMBER, &component) != 0) {
+        goto END;
+    }
+    color->a = (Uint8) component->valuedouble;
+
+    /* ======== */
+
+    return 0;
+
+    { END:
+        cJSON_Delete(_color);
+
+        return -1;
+    }
+}
+
+/* ================================================================ */
+
 #undef DEFAULT_SDL
 #undef STRICT
