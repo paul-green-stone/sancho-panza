@@ -2,21 +2,18 @@
 
 /* ================================================================ */
 
-Grid *Grid_new(int cell_width, int cell_height, int width, int height, SDL_Color *color)
-{
+Grid *Grid_new(int cell_width, int cell_height, int width, int height, SDL_Color *color) {
 
     Grid *grid = NULL;
 
     /* ================ */
 
-    if ((grid = calloc(1, sizeof(Grid))) == NULL)
-    {
+    if ((grid = calloc(1, sizeof(Grid))) == NULL) {
         return NULL;
     }
 
     grid->cell_w = cell_width;
     grid->cell_h = cell_height;
-
 
     grid->rows = (cell_height == 0) ? 0 : height / cell_height;
     grid->cols = (cell_width == 0) ? 0 : width / cell_width;
@@ -33,11 +30,9 @@ Grid *Grid_new(int cell_width, int cell_height, int width, int height, SDL_Color
 
 /* ================================================================ */
 
-void Grid_destroy(Grid **grid)
-{
+void Grid_destroy(Grid **grid) {
 
-    if ((grid == NULL) || (*grid == NULL))
-    {
+    if ((grid == NULL) || (*grid == NULL)) {
         return;
     }
 
@@ -47,33 +42,29 @@ void Grid_destroy(Grid **grid)
 
 /* ================================================================ */
 
-int Grid_draw(const Window *window, const Grid *grid, int x, int y)
-{
+int Grid_draw(const Window *window, const Grid *grid, int x, int y) {
 
     SDL_Color current_color;
 
     /* ================ */
 
-    if (grid == NULL)
-    {
+    if (grid == NULL) {
         return -1;
     }
 
-    if ((grid->width <= 0) || (grid->height <= 0))
-    {
+    if ((grid->width <= 0) || (grid->height <= 0)) {
         return 0;
     }
 
     SDL_GetRenderDrawColor(window->r, &current_color.r, &current_color.g, &current_color.b, &current_color.a);
+    
     Window_set_RGBA((Window *)window, grid->color.r, grid->color.g, grid->color.b, grid->color.a);
 
-    for (size_t i = 0; i <= grid->rows; i++)
-    {
+    for (size_t i = 0; i <= grid->rows; i++) {
         SDL_RenderDrawLine(window->r, x + 0, y + i * grid->cell_h, x + grid->width, y + i * grid->cell_h);
     }
 
-    for (size_t i = 0; i <= grid->cols; i++)
-    {
+    for (size_t i = 0; i <= grid->cols; i++) {
         SDL_RenderDrawLine(window->r, x + i * grid->cell_w, y + 0, x + i * grid->cell_w, y + grid->height);
     }
 
@@ -86,16 +77,13 @@ int Grid_draw(const Window *window, const Grid *grid, int x, int y)
 
 /* ================================================================ */
 
-int Grid_update(Grid *grid, SDL_Rect *new_d)
-{
+int Grid_update(Grid *grid, SDL_Rect *new_d) {
 
-    if (grid == NULL)
-    {
+    if (grid == NULL) {
         return -1;
     }
 
-    if (new_d == NULL)
-    {
+    if (new_d == NULL) {
         return -1;
     }
 
@@ -121,13 +109,11 @@ cJSON *Grid_serialize(const Grid *grid) {
 
     /* ================ */
 
-    if (grid == NULL)
-    {
+    if (grid == NULL) {
         return NULL;
     }
 
-    if ((object = cJSON_CreateObject()) == NULL)
-    {
+    if ((object = cJSON_CreateObject()) == NULL) {
         return object; // NULL
     }
 
@@ -135,8 +121,7 @@ cJSON *Grid_serialize(const Grid *grid) {
     /* =========== Creating the `cell_width` =========== */
     /* ================================================= */
 
-    if ((data = cJSON_CreateNumber(grid->cell_w)) == NULL)
-    {
+    if ((data = cJSON_CreateNumber(grid->cell_w)) == NULL) {
         goto END;
     }
     /* After creation was successful, immediately add it to the `object`,
@@ -147,8 +132,7 @@ cJSON *Grid_serialize(const Grid *grid) {
     /* ========== Creating the `cell_height` =========== */
     /* ================================================= */
 
-    if ((data = cJSON_CreateNumber(grid->cell_h)) == NULL)
-    {
+    if ((data = cJSON_CreateNumber(grid->cell_h)) == NULL) {
         goto END;
     }
     cJSON_AddItemToObject(object, "cell_height", data);
@@ -157,8 +141,7 @@ cJSON *Grid_serialize(const Grid *grid) {
     /* =========== Creating the `grid_width` =========== */
     /* ================================================= */
 
-    if ((data = cJSON_CreateNumber(grid->width)) == NULL)
-    {
+    if ((data = cJSON_CreateNumber(grid->width)) == NULL) {
         goto END;
     }
     cJSON_AddItemToObject(object, "width", data);
@@ -167,8 +150,7 @@ cJSON *Grid_serialize(const Grid *grid) {
     /* ========== Creating the `grid_height` =========== */
     /* ================================================= */
 
-    if ((data = cJSON_CreateNumber(grid->height)) == NULL)
-    {
+    if ((data = cJSON_CreateNumber(grid->height)) == NULL) {
         goto END;
     }
     cJSON_AddItemToObject(object, "height", data);
@@ -186,8 +168,7 @@ cJSON *Grid_serialize(const Grid *grid) {
 
     return object;
 
-    {
-    END:
+    { END:
         cJSON_Delete(object);
         object = NULL;
 
@@ -281,6 +262,25 @@ int Grid_deserialize(const cJSON* root, Grid* grid) {
     grid->height = height;
 
     grid->color = color;
+
+    /* ======== */
+
+    return 0;
+}
+
+/* ================================================================ */
+
+int Grid_setColor(Grid* grid, const SDL_Color* color) {
+
+    if (grid == NULL) {
+        return -1;
+    }
+
+    if (color == NULL) {
+        return -1;
+    }
+
+    grid->color = *color;
 
     /* ======== */
 

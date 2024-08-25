@@ -55,22 +55,73 @@ typedef struct grid {
 
 /* ================================ */
 
+/**
+ * The `Grid_new` function is used to create a new grid object with specified dimensions and cell properties.
+ * It allocates memory for the grid structure and initializes its members based on the provided parameters.
+ * After you are finished using the grid, it is essential to release the allocated memory by calling the `Grid_destroy` function.
+ * 
+ * @param cell_width The width of each cell in the grid.
+ * @param cell_height The height of each cell in the grid.
+ * @param width The overall width of the grid.
+ * @param The overall height of the grid.
+ * @param color A pointer to an `SDL_Color` struct representing the color of the grid cells. If `NULL`, the cells will be black by default.
+ * 
+ * @return The function returns a pointer to the newly created `Grid` struct. If memory allocation fails, it returns `NULL`.
+ */
 extern Grid* Grid_new(int cell_width, int cell_height, int width, int height, SDL_Color* color);
 
 /* ================================================================ */
 
+/**
+ * The `Grid_destroy` function is used to safely deallocate the memory associated with a `Grid` object.
+ * It ensures that the grid is properly destroyed and that the pointer to the grid is set to `NULL` to prevent dangling references.
+ * 
+ * @param grid A double pointer to a `Grid` struct.
+ * This allows the function to modify the original pointer, setting it to `NULL` after the memory is freed.
+ * 
+ * @return None.
+ */
 extern void Grid_destroy(Grid** grid);
 
 /* ================================================================ */
 
+/**
+ * The `Grid_draw` function is responsible for rendering a grid onto a specified window at a given position.
+ * It draws horizontal and vertical lines to represent the grid structure based on the properties of the `Grid` object.
+ * 
+ * @param window A pointer to a `Window` struct where the grid will be drawn. This includes the rendering context.
+ * @param grid A pointer to a `Grid` struct that contains the properties of the grid, such as cell size and color.
+ * @param x The x-coordinate of the top-left corner where the grid will be drawn.
+ * @param y The y-coordinate of the top-left corner where the grid will be drawn.
+ * 
+ * @return Returns `-1` if the `grid` pointer is `NULL`. Returns `0` if the grid dimensions are non-positive or if the drawing operation completes successfully.
+ */
 extern int Grid_draw(const Window* window, const Grid* grid, int x, int y);
 
 /* ================================================================ */
 
-extern int Grid_setColor(Grid* grid, SDL_Color color);
+/**
+ * The `Grid_setColor` function is used to set the color of a `Grid` object.
+ * It allows you to change the color of the grid cells to a new specified color.
+ * 
+ * @param grid A pointer to the Grid struct whose color needs to be updated.
+ * @param color A pointer to an `SDL_Color` struct that represents the new color to be applied to the grid cells.
+ * 
+ * @return `-1` if either the `grid` pointer or the `color` pointer is `NULL`. `0` if the color update operation completes successfully.
+ */
+extern int Grid_setColor(Grid* grid, const SDL_Color* color);
 
 /* ================================================================ */
 
+/**
+ * The `Grid_update` function updates the properties of an existing `Grid` object based on new dimensions provided in an `SDL_Rect`.
+ * This function allows for dynamic resizing of the grid's cell dimensions while recalculating the overall grid dimensions.
+ * 
+ * @param grid A pointer to the `Grid` struct that needs to be updated. This struct contains properties such as cell width, cell height, and overall dimensions.
+ * @param new_d A pointer to an `SDL_Rect` struct that contains the new dimensions for the grid cells. It should specify the width (w) and height (h) of the cells.
+ * 
+ * @return `-1` if either the `grid` pointer or the `new_d` pointer is `NULL`. `0` if the update operation completes successfully.
+ */
 extern int Grid_update(Grid* grid, SDL_Rect* new_d);
 
 /* ================================================================ */
