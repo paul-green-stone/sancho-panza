@@ -2,6 +2,8 @@
 
 #define DEFAULT_SDL ".config.json"
 
+#define BUFFER_SIZE 256
+
 /* ================================================================ */
 /* ============= Here are the arrays that map strings ============= */
 /* =============== to their corresponding SDL flags =============== */
@@ -577,8 +579,6 @@ int read_file2buffer(const char* name, char** buffer) {
 
     size_t number_of_bytes;
     size_t bytes_read;
-
-    /* ================ */
     
     /* ================================================ */
     /* =============== Opening the file =============== */
@@ -587,7 +587,7 @@ int read_file2buffer(const char* name, char** buffer) {
     if ((file = fopen(name, "r")) == NULL) {
 
         #ifdef STRICT
-            print_error(stderr, "%s (%s%s%s)\n", strerror(errno), CYAN, name, WHITE);
+            error(stderr, "%s (%s%s%s)\n", strerror(errno), CYAN, name, WHITE);
         #endif
 
         /* ======== */
@@ -613,7 +613,7 @@ int read_file2buffer(const char* name, char** buffer) {
     if ((*buffer = (char*) calloc(number_of_bytes, sizeof(char))) == NULL) {
 
         #ifdef STRICT
-            print_error(stderr, "%s\n", strerror(errno));
+            error(stderr, "%s\n", strerror(errno));
         #endif
 
         fclose(file);
@@ -639,13 +639,81 @@ int read_file2buffer(const char* name, char** buffer) {
 
 /* ================================================================ */
 
-void print_error(FILE* stream, const char* format, ...) {
+void print_message(FILE* stream, Message_Type msg_type, const char* format, ...) {
+
+    char buffer[BUFFER_SIZE];
+    size_t bytes_written;
 
     va_list args;
     va_start(args, format);
 
-    fprintf(stream, "%s%s%s: ", RED, "Error", WHITE);
-    vfprintf(stream, format, args);
+    const char* prefix;
+
+    /* ================ */
+
+    stream = (!stream) ? ((msg_type == ERROR) ? stderr : stdout) : stream;
+
+    switch (msg_type) {
+
+        case ERROR:
+            prefix = RED "Error" WHITE;
+            break ;
+
+        case WARNING:
+            prefix = YELLOW "Warning" WHITE;
+            break ;
+
+        case SUCCESS:
+            prefix = GREEN "Success" WHITE;
+            break ;
+    }
+
+    if (((bytes_written = snprintf(buffer, sizeof(buffer), "%s: ", prefix)) < 0) || (bytes_written >= sizeof(buffer))) {
+        fprintf(stream, "%s%s%s: error formatting error message\n", RED, "Error", WHITE);
+
+        return ;
+    }
+
+    if ((bytes_written = vsnprintf(buffer + bytes_written, sizeof(buffer) - bytes_written, format, args) < 0) || (bytes_written >= sizeof(buffer) - bytes_written)) {
+        fprintf(stream, "%s%s%s: error formatting error message\n", RED, "Error", WHITE);
+
+        return ;
+    }
+
+    fprintf(stream, "%s", buffer);
+    fflush(stream);
+
+    va_end(args);
+}
+
+/* ================================================================ */
+
+void print_error(FILE* stream, const char* format, ...) {
+
+    char buffer[BUFFER_SIZE];
+    size_t bytes_written;
+
+    va_list args;
+    va_start(args, format);
+
+    /* ================ */
+
+    stream = (!stream) ? stderr : stream;
+
+    if (((bytes_written = snprintf(buffer, sizeof(buffer), "%s%s%s: ", RED, "Error", WHITE)) < 0) || (bytes_written >= sizeof(buffer))) {
+        fprintf(stream, "%s%s%s: error formatting error message\n", RED, "Error", WHITE);
+
+        return ;
+    }
+
+    if ((bytes_written = vsnprintf(buffer + bytes_written, sizeof(buffer) - bytes_written, format, args) < 0) || (bytes_written >= sizeof(buffer) - bytes_written)) {
+        fprintf(stream, "%s%s%s: error formatting error message\n", RED, "Error", WHITE);
+
+        return ;
+    }
+
+    fprintf(stream, "%s", buffer);
+    fflush(stream);
 
     va_end(args);
 }
@@ -654,11 +722,30 @@ void print_error(FILE* stream, const char* format, ...) {
 
 void print_warning(FILE* stream, const char* format, ...) {
 
+    char buffer[BUFFER_SIZE];
+    size_t bytes_written;
+
     va_list args;
     va_start(args, format);
 
-    fprintf(stream, "%s%s%s: ", YELLOW, "Warning", WHITE);
-    vfprintf(stream, format, args);
+    /* ================ */
+
+    stream = (!stream) ? stdout : stream;
+
+    if (((bytes_written = snprintf(buffer, sizeof(buffer), "%s%s%s: ", YELLOW, "Warning", WHITE)) < 0) || (bytes_written >= sizeof(buffer))) {
+        fprintf(stream, "%s%s%s: error formatting error message\n", RED, "Error", WHITE);
+
+        return ;
+    }
+
+    if ((bytes_written = vsnprintf(buffer + bytes_written, sizeof(buffer) - bytes_written, format, args) < 0) || (bytes_written >= sizeof(buffer) - bytes_written)) {
+        fprintf(stream, "%s%s%s: error formatting error message\n", RED, "Error", WHITE);
+
+        return ;
+    }
+
+    fprintf(stream, "%s", buffer);
+    fflush(stream);
 
     va_end(args);
 }
@@ -667,11 +754,30 @@ void print_warning(FILE* stream, const char* format, ...) {
 
 void print_success(FILE* stream, const char* format, ...) {
 
+    char buffer[BUFFER_SIZE];
+    size_t bytes_written;
+
     va_list args;
     va_start(args, format);
 
-    fprintf(stream, "%s%s%s: ", GREEN, "Success", WHITE);
-    vfprintf(stream, format, args);
+    /* ================ */
+
+    stream = (!stream) ? stdout : stream;
+
+    if (((bytes_written = snprintf(buffer, sizeof(buffer), "%s%s%s: ", GREEN, "Success", WHITE)) < 0) || (bytes_written >= sizeof(buffer))) {
+        fprintf(stream, "%s%s%s: error formatting error message\n", RED, "Error", WHITE);
+
+        return ;
+    }
+
+    if ((bytes_written = vsnprintf(buffer + bytes_written, sizeof(buffer) - bytes_written, format, args) < 0) || (bytes_written >= sizeof(buffer) - bytes_written)) {
+        fprintf(stream, "%s%s%s: error formatting error message\n", RED, "Error", WHITE);
+
+        return ;
+    }
+
+    fprintf(stream, "%s", buffer);
+    fflush(stream);
 
     va_end(args);
 }

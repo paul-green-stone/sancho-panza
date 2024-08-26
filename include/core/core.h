@@ -32,6 +32,27 @@ typedef struct application App;
 #define BLUE "\033[0;34m"
 
 /* ================================================================ */
+/* ==== These macros simplify the process of printing messages ==== */ 
+/* ============= with appropriate prefixes and colors ============= */
+/* ================================================================ */
+
+/**
+ * The `error` macro is a convenient way to print error messages using the `print_message` function.
+ * It prepends the message with a red "Error:" prefix and sends the output to the specified stream (usually `stderr`).
+ */
+#define error(stream, format, ...) print_message((stream), ERROR, (format), ##__VA_ARGS__)
+
+/**
+ * The `warning` macro is used to print warning messages using the `print_message` function. It prepends the message with a yellow "Warning:" prefix and sends the output to the specified stream (usually `stdout`).
+ */
+#define warning(strema, format, ...) print_message((stream), WARNING, (format), ##__VA_ARGS__)
+
+/**
+ * The `success` macro is used to print success messages using the `print_message` function. It prepends the message with a green "Success:" prefix and sends the output to the specified stream (usually stdout).
+ */
+#define success(strema, format, ...) print_message((stream), SUCCESS, (format), ##__VA_ARGS__)
+
+/* ================================================================ */
 
 enum checks {
     ARRAY,
@@ -41,8 +62,19 @@ enum checks {
     STRING,
 };
 
+typedef enum {ERROR, WARNING, SUCCESS} Message_Type;
+
 /* ================================================================ */
 
+/**
+ * The `read_file2buffer` function reads the contents of a file specified by `name` into a dynamically allocated buffer pointed to by `buffer`.
+ * If compiled with the `STRICT` option, the function will also print error messages describing any issues encountered
+ * 
+ * @param name A null-terminated string specifying the path to the file to be read.
+ * @param buffer A pointer to a `char*` that will hold the address of the dynamically allocated buffer containing the file contents.
+ * 
+ * @return On success, the function returns `0`. On failure, the function returns the value of `errno` indicating the error that occurred.
+ */
 extern int read_file2buffer(const char* name, char** buffer);
 
 /* ================================================================ */
@@ -52,6 +84,22 @@ extern void print_error(FILE* stream, const char* format, ...);
 /* ================================================================ */
 
 extern void print_warning(FILE* stream, const char* format, ...);
+
+/* ================================================================ */
+
+/**
+ * The `print_message` function prints a formatted message to the specified output stream.
+ * It prepends the message with a colored prefix indicating the message type ("Error:", "Warning:", or "Success:") and resets the text color after the message.
+ * 
+ * @param stream A pointer to a `FILE` object representing the output stream where the message will be written.
+ * If stream is `NULL`, it defaults to `stderr` for errors and `stdout` for warnings and successes.
+ * @param msg_type A value of type `Message_Type` specifying the type of message to be printed. It can be one of `ERROR`, `WARNING`, or `SUCCESS`.
+ * @param format A null-terminated string that specifies the format of the message. It can contain conversion specifiers and other formatting characters.
+ * @param ... A variable number of arguments, which are converted and inserted in the resulting string according to the corresponding conversion specifiers in the format string.
+ * 
+ * @return None.
+ */
+extern void print_message(FILE* stream, Message_Type msg_type, const char* format, ...);
 
 /* ================================================================ */
 
