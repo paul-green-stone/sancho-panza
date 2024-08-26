@@ -14,7 +14,7 @@ int cell_size[] = {5, 10, 20};
 
 int main(int argc, char** argv) {
 
-    App* app;
+    App* app = NULL;
     SDL_Event event;
     Grid* grid;
 
@@ -23,11 +23,11 @@ int main(int argc, char** argv) {
 
     SDL_Color green = {0, 255, 0, 255};
 
-    grid = Grid_new(5, 5, 600, 400, &green);
-
     /* ======== */
 
     if (SP_init(&app) == 0) {
+
+        grid = Grid_new(5, 5, 600, 400, &green);
 
         while (app->run) {
 
@@ -74,17 +74,18 @@ int main(int argc, char** argv) {
                 Window_update(app->window);
             }
         }
+
+        cJSON* sgrid = Grid_serialize(grid);
+
+        Grid_destroy(&grid);
+
+        Grid_write2file_JSON("grid", sgrid);
+
+        cJSON_Delete(sgrid);
+
+        Application_destroy(&app);
+
     }
-
-    cJSON* sgrid = Grid_serialize(grid);
-
-    Grid_destroy(&grid);
-
-    Grid_write2file_JSON("grid", sgrid);
-
-    cJSON_Delete(sgrid);
-
-    Application_destroy(&app);
 
     SP_quit();
 

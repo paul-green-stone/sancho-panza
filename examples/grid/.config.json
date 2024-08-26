@@ -1,10 +1,10 @@
 {
-	"SDL":	["SDL_INIT_VIDEO", "SDL_INIT_EVENTS", "SDL_INIT_TIMER"],
+	"SDL_Init__flags":	["SDL_INIT_VIDEO", "SDL_INIT_EVENTS", "SDL_INIT_TIMER"],
 	"Window":	{
 		"title":	"Sancho Panza",
 		"width":	600,
 		"height":	400,
-		"wflags":	["SDL_WINDOW_SHOWN"],
-		"rflags":	["SDL_RENDERER_ACCELERATED"]
+		"SDL_Window__flags":	["SDL_WINDOW_SHOWN"],
+		"SDL_Renderer__flags":	["SDL_RENDERER_ACCELERATED"]
 	}
 }

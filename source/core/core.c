@@ -18,7 +18,7 @@ struct mapping_entry {
 /* ======================== SDL_Init Flags ======================== */
 /* ================================================================ */
 
-static struct mapping_entry SDL_Init_Flags[] = {
+static const struct mapping_entry SDL_Init_Flags[] = {
     {"SDL_INIT_TIMER", SDL_INIT_TIMER},
     {"SDL_INIT_AUDIO", SDL_INIT_AUDIO},
     {"SDL_INIT_VIDEO", SDL_INIT_VIDEO},
@@ -31,10 +31,10 @@ static struct mapping_entry SDL_Init_Flags[] = {
 };
 
 /* ================================================================ */
-/* ==================== SDL_CreateWindow Flags ==================== */
+/* ======================= SDL_Window Flags ======================= */
 /* ================================================================ */
 
-static struct mapping_entry SDL_CreateWindow_Flags[] = {
+static const struct mapping_entry SDL_CreateWindow_Flags[] = {
     {"SDL_WINDOW_FULLSCREEN", SDL_WINDOW_FULLSCREEN},
     {"SDL_WINDOW_OPENGL", SDL_WINDOW_OPENGL},
     {"SDL_WINDOW_SHOWN", SDL_WINDOW_SHOWN},
@@ -61,10 +61,10 @@ static struct mapping_entry SDL_CreateWindow_Flags[] = {
 };
 
 /* ================================================================ */
-/* =================== SDL_CreateRenderer Flags =================== */
+/* ====================== SDL_Renderer Flags ====================== */
 /* ================================================================ */
 
-static struct mapping_entry SDL_CreateRenderer_flags[] = {
+static const struct mapping_entry SDL_CreateRenderer_flags[] = {
     {"SDL_RENDERER_SOFTWARE", SDL_RENDERER_SOFTWARE},
     {"SDL_RENDERER_ACCELERATED", SDL_RENDERER_ACCELERATED},
     {"SDL_RENDERER_PRESENTVSYNC", SDL_RENDERER_PRESENTVSYNC},
@@ -115,7 +115,6 @@ struct cJSON_checker_mapping_entry {
  * checking the types of JSON elements during parsing or validation.
  */
 struct cJSON_checker_mapping_entry cJSON_checkers[] = {
-
     {ARRAY, "array", cJSON_IsArray},
     {BOOLEAN, "boolean", cJSON_IsBool},
     {OBJECT, "object", cJSON_IsObject},
@@ -156,6 +155,16 @@ struct window_options {
 /* ================== Static, internal functions ================== */
 /* ================================================================ */
 
+/**
+ * The `SDL_lookup_flag` function searches a mapping table for a specific string flag and returns its corresponding flag value.
+ * If the string flag is not recognized, it issues a warning and returns a default success value.
+ * 
+ * @param table A pointer to an array of `mapping_entry` structures that defines the mapping between string flags and their corresponding flag values.
+ * @param string_flag A pointer to a null-terminated string representing the flag to be looked up in the mapping table.
+ * @param table_size The size of the mapping table (i.e., the number of entries in the table).
+ * 
+ * @return Returns the corresponding flag value of type `Uint32` if the `string_flag` is found in the mapping table. Returns `EXIT_SUCCESS` if the `string_flag` is not recognized.
+ */
 static Uint32 SDL_lookup_flag(const struct mapping_entry* table, const char* string_flag, size_t table_size) {
 
     size_t i;
@@ -179,49 +188,6 @@ static Uint32 SDL_lookup_flag(const struct mapping_entry* table, const char* str
     /* ======== */
 
     return EXIT_SUCCESS;
-}
-
-/* ================================================================ */
-
-static Uint32 SDL_Init_get_flags(const cJSON* root) {
-
-    Uint32 SDL_flags = 0;
-
-    cJSON* array;
-    size_t array_size;
-
-    size_t i;
-    
-    /* ================ */
-
-    /* ================================================================ */
-    /* ==================== Extracting `SDL` array ==================== */
-    /* ====================== from a root object ====================== */
-    /* ================================================================ */
-
-    if (extract_JSON_data(root, "SDL", ARRAY, &array) != 0) {
-        return SDL_flags;
-    }
-
-    array_size = cJSON_GetArraySize(array);
-
-    /* ================================================================ */
-    /* ================ Mapping arrays' string values ================= */
-    /* ================== to its numeric equivalents ================== */
-    /* ================================================================ */
-
-    for (i = 0; i < array_size; i++) {
-
-        /* Retrieve the next element from the given array */
-        cJSON* array_elm = cJSON_GetArrayItem(array, i);
-
-        /* Map a string to its equivalent flag */
-        SDL_flags |= SDL_lookup_flag(SDL_Init_Flags, array_elm->valuestring, sizeof(SDL_Init_Flags) / sizeof(SDL_Init_Flags[0]));
-    }
-
-    /* ======== */
-
-    return SDL_flags;
 }
 
 /* ================================================================ */
@@ -379,7 +345,7 @@ static const char* extract_checker_name(int type) {
 
 /* ================================================================ */
 
-static int create_default_init_file(void) {
+static int create_config_file(void) {
     
     /* The main container */
     cJSON* root;
@@ -393,18 +359,19 @@ static int create_default_init_file(void) {
 
     size_t i;
 
-    char* default_SDL_flags[] = {"SDL_INIT_VIDEO", "SDL_INIT_EVENTS", "SDL_INIT_TIMER"};
-    size_t size = sizeof(default_SDL_flags) / sizeof(default_SDL_flags[0]);
+    const char* SDL_Init__flags[] = {"SDL_INIT_VIDEO", "SDL_INIT_EVENTS", "SDL_INIT_TIMER"};
+    size_t size = sizeof(SDL_Init__flags) / sizeof(SDL_Init__flags[0]);
 
-    char* default_window_flags[] = {"SDL_WINDOW_SHOWN"};
-    size_t w_size = sizeof(default_window_flags) / sizeof(default_window_flags[0]);
+    const char* SDL_Window__flags[] = {"SDL_WINDOW_SHOWN"};
+    size_t w_size = sizeof(SDL_Window__flags) / sizeof(SDL_Window__flags[0]);
 
-    char* default_renderer_flags[] = {"SDL_RENDERER_ACCELERATED"};
-    size_t r_size = sizeof(default_renderer_flags) / sizeof(default_renderer_flags[0]);
+    const char* SDL_Renderer__flags[] = {"SDL_RENDERER_ACCELERATED"};
+    size_t r_size = sizeof(SDL_Renderer__flags) / sizeof(SDL_Renderer__flags[0]);
+
+    const int window_width = 600;
+    const int window_height = 400;
 
     errno = 0;
-
-    /* ============ */
     
     /* ================================================ */
     /* =========== Creating the root object =========== */
@@ -414,28 +381,28 @@ static int create_default_init_file(void) {
     if ((root = cJSON_CreateObject()) == NULL) {
         /* Most likely it's a memory allocation error */
 
-        goto ON_ERROR;
+        goto END;
     }
 
     /* ================================================ */
     /* ============== Creating an array =============== */
-    /* =============== containing flags =============== */
+    /* ========== containing SDL_Init flags =========== */
     /* ================================================ */
     
     if ((flags = cJSON_CreateArray()) == NULL) {
         /* Most likely it's a memory allocation error */
 
-        goto ON_ERROR;
+        goto END;
     }
 
     /* No return value check? Inserting the array into the main object */
-    cJSON_AddItemToObject(root, "SDL", flags);
+    cJSON_AddItemToObject(root, "SDL_Init__flags", flags);
     
     /* Populating the array with values */
     for (i = 0; i < size; i++) {
 
-        if ((flag = cJSON_CreateString(default_SDL_flags[i])) == NULL) {
-            goto ON_ERROR;
+        if ((flag = cJSON_CreateString(SDL_Init__flags[i])) == NULL) {
+            goto END;
         }
 
         cJSON_AddItemToArray(flags, flag);
@@ -448,7 +415,7 @@ static int create_default_init_file(void) {
     if ((window = cJSON_CreateObject()) == NULL) {
         /* Most likely it's a memory allocation error */
         
-        goto ON_ERROR;
+        goto END;
     }
     
     /* ================================================ */
@@ -461,11 +428,11 @@ static int create_default_init_file(void) {
     cJSON_AddItemToObject(window, "title", flag);
     
     /* Window width */
-    flag = cJSON_CreateNumber(600);
+    flag = cJSON_CreateNumber(window_width);
     cJSON_AddItemToObject(window, "width", flag);
     
     /* Window height */
-    flag = cJSON_CreateNumber(400);
+    flag = cJSON_CreateNumber(window_height);
     cJSON_AddItemToObject(window, "height", flag);
 
     /* ================================================ */
@@ -474,20 +441,20 @@ static int create_default_init_file(void) {
 
     if ((flags = cJSON_CreateArray()) == NULL) {
         /* Most likely it's a memory allocation error */
-        goto ON_ERROR;
+        goto END;
     }
 
     for (i = 0; i < w_size; i++) {
 
-        if ((flag = cJSON_CreateString(default_window_flags[i])) == NULL) {
-            goto ON_ERROR;
+        if ((flag = cJSON_CreateString(SDL_Window__flags[i])) == NULL) {
+            goto END;
         }
 
         cJSON_AddItemToArray(flags, flag);
     }
 
     /* Add window flags to the window object */
-    cJSON_AddItemToObject(window, "wflags", flags);
+    cJSON_AddItemToObject(window, "SDL_Window__flags", flags);
 
     /* ================================================ */
     /* ===== Creating an array of renderer flags ====== */
@@ -495,20 +462,20 @@ static int create_default_init_file(void) {
 
     if ((flags = cJSON_CreateArray()) == NULL) {
         /* Most likely it's a memory allocation error */
-        goto ON_ERROR;
+        goto END;
     }
 
     for (i = 0; i < r_size; i++) {
 
-        if ((flag = cJSON_CreateString(default_renderer_flags[i])) == NULL) {
-            goto ON_ERROR;
+        if ((flag = cJSON_CreateString(SDL_Renderer__flags[i])) == NULL) {
+            goto END;
         }
 
         cJSON_AddItemToArray(flags, flag);
     }
 
     /* Add renderer flags to the window object */
-    cJSON_AddItemToObject(window, "rflags", flags);
+    cJSON_AddItemToObject(window, "SDL_Renderer__flags", flags);
 
     /* ================================ */
 
@@ -521,11 +488,11 @@ static int create_default_init_file(void) {
 
     /* Converting to `char*` */
     if ((text = cJSON_Print(root)) == NULL) {
-        goto ON_ERROR;
+        goto END;
     }
 
     if (write_to_file(".config.json", text) != 0) {
-        goto ON_ERROR;
+        goto END;
     }
 
     /* ================================================ */
@@ -539,7 +506,7 @@ static int create_default_init_file(void) {
 
     return 0;
 
-    ON_ERROR:
+    END:
     {
         #ifdef STRICT
             print_error(stderr, "%s (%s%s%s)\n", "unable to create a default configuration file", RED, errno != 0 ? strerror(errno) : "", WHITE);
@@ -787,8 +754,6 @@ void print_success(FILE* stream, const char* format, ...) {
 int JSON_parse(const char* buffer, cJSON** root) {
 
     const char* error_ptr;
-
-    /* ================ */
     
     /* ================================================ */
     /* ================ Just a wrapper ================ */
@@ -799,7 +764,7 @@ int JSON_parse(const char* buffer, cJSON** root) {
 
         if ((error_ptr = cJSON_GetErrorPtr()) != NULL) {
             
-            print_error(stderr, "before %s%s%s\n", PURPLE, error_ptr, WHITE);
+            error(stderr, "before %s%s%s\n", PURPLE, error_ptr, WHITE);
 
             /* ======== */
             return -1;
@@ -822,7 +787,7 @@ int write_to_file(const char* name, const char* string) {
     if (name == NULL) {
 
         #ifdef STRICT
-            print_error(stderr, "%s [%s%s%s]\n", "filename is not specified", BLUE, __func__, WHITE);
+            error(stderr, "%s [%s%s%s]\n", "filename is not specified", BLUE, __func__, WHITE);
         #endif
 
         /* ======== */
@@ -836,7 +801,7 @@ int write_to_file(const char* name, const char* string) {
     if ((file = fopen(name, "w+")) == NULL) {
 
         #ifdef STRICT
-            print_error(stderr, "%s [%s%s%s]\n", strerror(errno), BLUE, __func__, WHITE);
+            error(stderr, "%s [%s%s%s]\n", strerror(errno), BLUE, __func__, WHITE);
         #endif
 
         /* ======== */
@@ -856,7 +821,7 @@ int write_to_file(const char* name, const char* string) {
 
 /* ================================================================ */
 
-int extract_JSON_data(const cJSON* root, const char* name, int type, cJSON** data) {
+int extract_JSON_data(const cJSON* root, const char* name, JSON_Entity type, cJSON** data) {
 
     cJSON_bool (*check)(const cJSON* const);
     size_t size = sizeof(cJSON_checkers) / sizeof(cJSON_checkers[0]);
@@ -869,7 +834,6 @@ int extract_JSON_data(const cJSON* root, const char* name, int type, cJSON** dat
             print_error(stderr, "unsupported type\n");
         #endif
 
-        /* ======== */
         return -1;
     }
 
@@ -888,10 +852,9 @@ int extract_JSON_data(const cJSON* root, const char* name, int type, cJSON** dat
     if ((*data = cJSON_GetObjectItemCaseSensitive(root, name)) == NULL) {
 
         #ifdef STRICT
-            print_error(stderr, "there is no such element in the document [%s%s%s]\n", PURPLE, name, WHITE);
+            error(stderr, "there is no such element in the document [%s%s%s]\n", PURPLE, name, WHITE);
         #endif
 
-        /* ======== */
         return -1;
     }
     
@@ -902,12 +865,11 @@ int extract_JSON_data(const cJSON* root, const char* name, int type, cJSON** dat
     if (check(*data) != 1) {
 
         #ifdef STRICT
-            print_error(stderr, "the found element doesn't belong to the specified type [%s%s%s != %s]\n", PURPLE, name, WHITE, extract_checker_name(type));
+            error(stderr, "the found element doesn't belong to the specified type [%s%s%s != %s]\n", PURPLE, name, WHITE, extract_checker_name(type));
         #endif
 
         *data = NULL;
 
-        /* ======== */
         return -1;
     }
 
@@ -929,87 +891,104 @@ int SP_init(App** app) {
     int status = 0;
 
     /* ================ */
-    
-    /* ================================================ */
-    /* ========== Trying to read the default ========== */
-    /* ============== configuration file ============== */
-    /* ================================================ */
 
+    /**
+     * The function attempts to read the default configuration file specified by `DEFAULT_SDL` into a buffer using the `read_file2buffer` function.
+     * If the file is missing (indicated by `ENOENT`), a warning message is printed to `stdout`, and the function attempts to create a default configuration file using `create_config_file`.
+     */
     while ((status = read_file2buffer(DEFAULT_SDL, &buffer)) != 0) {
 
         if (status == ENOENT) {
 
             /* The error message from `read_file2buffer` is outputed as well (if STRICT) */
-            print_warning(stdout, "[%s%s%s] missing configuration file. Creating a default one...\n", BLUE, __func__, WHITE);
+            warning(stdout, "[%s%s%s] missing configuration file. Creating a default one...\n", BLUE, __func__, WHITE);
         }
         
-        /* ================================================ */
-        /* ========= Trying to create the default ========= */
-        /* ============== configuration file ============== */
-        /* ================================================ */
-
-        if ((status = create_default_init_file()) != 0) {
+        /**
+         * If the creation of the default configuration file fails, the function returns `-1`.
+         * If successful, it prints a success message indicating that the file has been created.
+         */
+        if ((status = create_config_file()) != 0) {
 
             /* The error message from `read_file2buffer` is outputed (if STRICT) */
             return -1;
         }
         else {
-            print_success(stdout, "file (%s%s%s) has been created\n", CYAN, DEFAULT_SDL, WHITE);
+            success(stdout, "file (%s%s%s) has been created\n", CYAN, DEFAULT_SDL, WHITE);
         }
     }
-    
-    /* ================================================ */
-    /* ========== Parsing the buffer content ========== */
-    /* ================================================ */
 
+    /* ================================ */
+    
+    /**
+     * The function attempts to parse the contents of the buffer as JSON using the `JSON_parse` function.
+     * If parsing fails, the function jumps to the error handling section.
+     */
     if ((status = JSON_parse(buffer, &root)) != 0) {
         /* `JSON_parse` prints the error location to the console */
-        goto ON_ERROR;
+        goto END;
     }
-    
-    /* ================================================ */
-    /* ======== Initializing the SDL2 Library ========= */
-    /* ================================================ */
 
-    SDL_flags = SDL_Init_get_flags(root);
+    /* ================================ */
+    
+    /**
+     * The function retrieves the SDL initialization flags from the parsed JSON data and attempts to initialize SDL using `SDL_Init`.
+     * If initialization fails, an error message is printed to `stderr`, and the function jumps to the error handling section.
+     */
+    SDL_flags = deserialize__SDL_Init__flags(root, "SDL_Init__flags");
 
     if ((status = SDL_Init(SDL_flags)) != 0) {
-        print_error(stderr, "Initialization failed. Unable to initialize SDL (%s%s%s)\n", RED, SDL_GetError(), WHITE);
+        error(stderr, "Initialization failed. Unable to initialize SDL (%s%s%s)\n", RED, SDL_GetError(), WHITE);
 
-        goto ON_ERROR;
+        goto END;
     }
 
-    /* ================================================ */
-    /* ============ Getting window options ============ */
-    /* ================================================ */
+    /* ================================ */
     
+    /**
+     * The function retrieves window options from the parsed JSON data using `get_window_options`. If this fails, an error message is printed to `stderr`, and the function jumps to the error handling section.
+     */
     if (get_window_options(root, &opts) != 0) {
-        print_error(stderr, "Initialization failed. Unable to get window flags\n");
+        error(stderr, "Initialization failed. Unable to get window flags\n");
         
-        goto ON_ERROR;
+        goto END;
     }
-    
-    /* ================================================ */
-    /* =========== Getting the Application ============ */
-    /* ================================================ */
 
+    /* ================================ */
+
+    /**
+     * The function creates a new application instance using `Application_new`.
+     * If this fails, it jumps to the error handling section.
+     */
     if ((*app = Application_new()) == NULL) {
-        goto ON_ERROR;
+        goto END;
     }
 
+    /* ================================ */
+
+    /**
+     * the function creates a new window for the application using `Window_new`.
+     * If this fails, it jumps to the error handling section.
+     */
     if (((*app)->window = Window_new(opts.title, opts.width, opts.height, opts.wflags, opts.rflags)) == NULL) {
-        goto ON_ERROR;
+        goto END;
     }
+
+    /* ================================ */
     
-    /* The application timer is used to cap FPS */
+    /**
+     * The function creates a timer for the application using `Timer_new` to cap the frame rate at 60 FPS.
+     * If this fails, it jumps to the error handling section.
+     */
     if (((*app)->timer = Timer_new(1.0f / 60)) == NULL) {
-        goto ON_ERROR;
+        goto END;
     }
 
-    /* ================================================ */
-    /* ================== Freeing memory ============== */
-    /* ================================================ */
+    /* ================================ */
 
+    /**
+     * If all initializations are successful, the function frees any allocated memory (e.g., the window title, buffer, and JSON root) before returning 0
+     */
     free(opts.title);
     free(buffer);
     cJSON_Delete(root);
@@ -1018,8 +997,10 @@ int SP_init(App** app) {
 
     return status;
 
-    ON_ERROR:
-    {
+    /**
+     * If any step fails, the function jumps to the `END` label, where it cleans up resources by destroying the application instance, freeing allocated memory, and quitting SDL before returning `-1`.
+     */
+    { END:
         Application_destroy(app);
         free(buffer);
         cJSON_Delete(root);
@@ -1150,6 +1131,81 @@ int deserialize__SDL_Color(const cJSON* root, SDL_Color* color, const char* labe
 
         return -1;
     }
+}
+
+/* ================================================================ */
+
+cJSON* serialize__SDL_Init__flags(void) {
+
+    cJSON* array = NULL;
+    Uint32 subsystem = SDL_WasInit(SDL_INIT_EVERYTHING);
+
+    /* ================ */
+
+    if ((array = cJSON_CreateArray()) == NULL) {
+        goto END;
+    }
+
+    for (size_t i = 0; i < sizeof(SDL_Init_Flags) / sizeof(SDL_Init_Flags[0]); i++) {
+        if (subsystem & SDL_Init_Flags[i].flag) {
+
+            if (!cJSON_AddItemToArray(array, cJSON_CreateString(SDL_Init_Flags[i].name))) {
+                goto END;
+            }
+        }
+    }
+
+    /* ======== */
+
+    return array;
+
+    { END:
+        cJSON_Delete(array);
+        array = NULL;
+
+        return array;
+    }
+}
+
+/* ================================================================ */
+
+Uint32 deserialize__SDL_Init__flags(const cJSON* root, const char* label) {
+
+    Uint32 flags = 0;
+    const char* default_label = "SDL_Init__flags";
+
+    cJSON* array = NULL;
+    size_t array_size;
+
+    /* ================ */
+
+    if (root == NULL) {
+
+        #ifdef STRICT
+            warning(stdout, "[in %s%s%s] no root element", BLUE, __func__, WHITE);
+        #endif
+
+        return flags; // 0
+    }
+
+    if (extract_JSON_data(root, label ? label : default_label, ARRAY, &array) != 0) {
+        return flags;
+    }
+
+    array_size = cJSON_GetArraySize(array);
+
+    for (size_t i = 0; i < array_size; i++) {
+
+        /* Retrieve the next element from the given array */
+        cJSON* array_elm = cJSON_GetArrayItem(array, i);
+
+        /* Map a string to its equivalent flag */
+        flags |= SDL_lookup_flag(SDL_Init_Flags, array_elm->valuestring, sizeof(SDL_Init_Flags) / sizeof(SDL_Init_Flags[0]));
+    }
+
+    /* ======== */
+
+    return flags;
 }
 
 /* ================================================================ */

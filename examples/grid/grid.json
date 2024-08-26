@@ -1,0 +1,12 @@
+{
+	"cell_width":	5,
+	"cell_height":	5,
+	"width":	600,
+	"height":	400,
+	"color":	{
+		"r":	0,
+		"g":	255,
+		"b":	0,
+		"a":	255
+	}
+}

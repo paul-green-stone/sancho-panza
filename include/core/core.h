@@ -45,22 +45,22 @@ typedef struct application App;
 /**
  * The `warning` macro is used to print warning messages using the `print_message` function. It prepends the message with a yellow "Warning:" prefix and sends the output to the specified stream (usually `stdout`).
  */
-#define warning(strema, format, ...) print_message((stream), WARNING, (format), ##__VA_ARGS__)
+#define warning(stream, format, ...) print_message((stream), WARNING, (format), ##__VA_ARGS__)
 
 /**
  * The `success` macro is used to print success messages using the `print_message` function. It prepends the message with a green "Success:" prefix and sends the output to the specified stream (usually stdout).
  */
-#define success(strema, format, ...) print_message((stream), SUCCESS, (format), ##__VA_ARGS__)
+#define success(stream, format, ...) print_message((stream), SUCCESS, (format), ##__VA_ARGS__)
 
 /* ================================================================ */
 
-enum checks {
+typedef enum {
     ARRAY,
     BOOLEAN,
     OBJECT,
     NUMBER,
     STRING,
-};
+} JSON_Entity;
 
 typedef enum {ERROR, WARNING, SUCCESS} Message_Type;
 
@@ -107,18 +107,57 @@ extern void print_success(FILE* stream, const char* format, ...);
 
 /* ================================================================ */
 
+/**
+ * The `JSON_parse` function is a wrapper around the `cJSON_Parse` function that parses a JSON-formatted string and returns a pointer to the resulting cJSON object.
+ * It also handles error reporting if the parsing fails.
+ * 
+ * @param buffer A pointer to a null-terminated string containing the JSON data to be parsed.
+ * @param root A pointer to a pointer of type `cJSON*`. This will be set to point to the parsed `cJSON` object if the parsing is successful.
+ * 
+ * @return `0` on success, indicating that the JSON data was parsed successfully. `-1` on failure, indicating that an error occurred during parsing.
+ */
 extern int JSON_parse(const char* buffer, cJSON** root);
 
 /* ================================================================ */
 
+/**
+ * This function opens a specified file for writing and writes a given string to it.
+ * It includes error handling to manage cases where the filename is not specified or the file cannot be opened,
+ * with error messages printed only when compiled with the `STRICT` option.
+ * 
+ * @param name A pointer to a null-terminated string that specifies the name of the file to be opened.
+ * @param string A pointer to a null-terminated string that contains the data to be written to the file.
+ * 
+ * @return `0` on success, indicating that the string was successfully written to the file. `-1` on failure, indicating that an error occurred during the operation.
+ */
 extern int write_to_file(const char* name, const char* string);
 
 /* ================================================================ */
 
-extern int extract_JSON_data(const cJSON* root, const char* name, int type, cJSON** data);
+/**
+ * The `extract_JSON_data` function extracts a specified JSON element from a `cJSON` object based on its name and type.
+ * It verifies that the extracted element matches the expected type and handles errors appropriately.
+ * 
+ * @param root A pointer to a `cJSON` object representing the root of the JSON data structure from which the element will be extracted.
+ * @param name A pointer to a null-terminated string that specifies the name of the JSON element to be extracted.
+ * @param type A value of type `JSON_Entity` that specifies the expected type of the JSON element (`ARRAY`, `BOOLEAN`, `OBJECT`, `NUMBER`, or `STRING`).
+ * @param data A pointer to a pointer of type `cJSON*`. This will be set to point to the extracted `cJSON` object if the extraction is successful.
+ * 
+ * @return `0` on success, indicating that the JSON element was successfully extracted and matches the expected type. `-1` on failure, indicating that an error occurred during the extraction process.
+ */
+extern int extract_JSON_data(const cJSON* root, const char* name, JSON_Entity type, cJSON** data);
 
 /* ================================================================ */
 
+/**
+ * The `SP_init` function initializes the Sancho Panza application by reading a configuration file, parsing its contents,
+ * and setting up the SDL2 library along with the application window and timer.
+ * It handles errors gracefully and ensures that resources are properly managed.
+ * 
+ * @param app A pointer to a pointer of type `App*`. This will be set to point to the newly created application instance if the initialization is successful.
+ * 
+ * @return `0` on success, indicating that the application was successfully initialized. `-1` on failure, indicating that an error occurred during the initialization process.
+ */
 extern int SP_init(App** app);
 
 /* ================================================================ */
@@ -150,6 +189,29 @@ extern cJSON* serialize__SDL_Color(const SDL_Color* color);
  * It returns `-1` on failure, indicating an error in the deserialization process.
 */
 extern int deserialize__SDL_Color(const cJSON* root, SDL_Color* color, const char* label);
+
+/* ================================================================ */
+
+/**
+ * The `serialize__SDL_Init__flags` function creates a JSON array that contains the names of the SDL subsystems that are currently initialized. 
+ * It checks the initialization flags using the SDL library and populates the array accordingly.
+ * 
+ * @return Returns a pointer to a `cJSON` array containing the names of the initialized SDL subsystems. Returns `NULL` if the array creation fails or if an error occurs while adding items to the array.
+ */
+extern cJSON* serialize__SDL_Init__flags(void);
+
+/* ================================================================ */
+
+/**
+ * The `deserialize__SDL_Init__flags` function is designed to extract and deserialize an array of flags from a JSON object, specifically for initializing SDL (Simple DirectMedia Layer).
+ * It maps string representations of flags to their corresponding SDL flag values and combines them into a single `Uint32` value.
+ * 
+ * @param root A pointer to the root JSON object from which the flags will be extracted.
+ * @param label A string label used to identify the specific array within the JSON object that contains the flags. If `NULL`, it defaults to "SDL_Init__flags".
+ * 
+ * @return Returns a `Uint32` value representing the combined SDL initialization flags. If the root JSON object is `NULL` or the extraction fails, it returns `0`.
+ */
+extern Uint32 deserialize__SDL_Init__flags(const cJSON* root, const char* label);
 
 /* ================================================================ */
 
