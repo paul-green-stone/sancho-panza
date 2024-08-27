@@ -11,7 +11,7 @@ App* Application_new(void) {
     if ((app = calloc(1, sizeof(struct application))) == NULL) {
 
         #ifdef STRICT
-            print_error(stderr, "in %s%s%s (%s%s%s)\n", BLUE, __func__, WHITE, RED, strerror(errno), WHITE);
+            error(stderr, "in %s%s%s (%s%s%s)\n", BLUE, __func__, WHITE, RED, strerror(errno), WHITE);
         #endif
 
         /* ======== */
@@ -45,7 +45,7 @@ int Application_destroy(App** app) {
     *app = NULL;
 
     #ifdef STRICT
-        print_success(stdout, "application has been destroyed\n");
+        success(stdout, "application has been destroyed\n", "");
     #endif
 
     /* ======== */

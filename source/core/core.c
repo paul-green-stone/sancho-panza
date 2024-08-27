@@ -183,7 +183,7 @@ static Uint32 SDL_lookup_flag(const struct mapping_entry* table, const char* str
 
     /* ======== */
 
-    print_warning(stdout, "unrecognized flags (%s) are simply ignored\n", string_flag);
+    warning(stdout, "unrecognized flags (%s) are simply ignored\n", string_flag);
 
     /* ======== */
 
@@ -201,8 +201,6 @@ static int get_window_options(const cJSON* root, struct window_options* options)
 
     size_t array_size;
     size_t i;
-    
-    /* ================ */
 
     /* ================================================ */
     /* ======== Extracting the `Window` object ======== */
@@ -234,7 +232,7 @@ static int get_window_options(const cJSON* root, struct window_options* options)
     /* ================================================ */
     
     if ((options->title = malloc(strlen(data->valuestring) * sizeof(char))) == NULL) {
-        print_error(stderr, "Sancho-Panza initialization failure (%s%s%s)\n", RED, strerror(errno), WHITE);
+        error(stderr, "Sancho-Panza initialization failure (%s%s%s)\n", RED, strerror(errno), WHITE);
 
         /* ======== */
         return -1;
@@ -272,7 +270,7 @@ static int get_window_options(const cJSON* root, struct window_options* options)
     /* ============ from the Window object ============ */
     /* ================================================ */
 
-    if (extract_JSON_data(object, "wflags", ARRAY, &data) != 0) {
+    if (extract_JSON_data(object, "SDL_Window__flags", ARRAY, &data) != 0) {
         /* `extract_JSON_data` prints the error message here if STRICT */
         
         /* ======== */
@@ -296,7 +294,7 @@ static int get_window_options(const cJSON* root, struct window_options* options)
     /* ================================================ */
 
     /* Extracting the renderer flags */
-    if (extract_JSON_data(object, "rflags", ARRAY, &data) != 0) {
+    if (extract_JSON_data(object, "SDL_Renderer__flags", ARRAY, &data) != 0) {
         return -1;
     }
 
@@ -345,6 +343,13 @@ static const char* extract_checker_name(int type) {
 
 /* ================================================================ */
 
+/**
+ * The §create_config_file§ function is responsible for creating a default configuration file in JSON format.
+ * It sets up a configuration for an SDL-based application, including window properties and initialization flags.
+ * The configuration is saved to a file named `.config.json`.
+ *
+ * @return `0` on success. `-1` on failure, indicating an error occurred during the creation of the configuration file.
+ */
 static int create_config_file(void) {
     
     /* The main container */
@@ -357,41 +362,47 @@ static int create_config_file(void) {
 
     char* text = NULL;
 
-    size_t i;
-
-    const char* SDL_Init__flags[] = {"SDL_INIT_VIDEO", "SDL_INIT_EVENTS", "SDL_INIT_TIMER"};
-    size_t size = sizeof(SDL_Init__flags) / sizeof(SDL_Init__flags[0]);
-
-    const char* SDL_Window__flags[] = {"SDL_WINDOW_SHOWN"};
-    size_t w_size = sizeof(SDL_Window__flags) / sizeof(SDL_Window__flags[0]);
-
-    const char* SDL_Renderer__flags[] = {"SDL_RENDERER_ACCELERATED"};
-    size_t r_size = sizeof(SDL_Renderer__flags) / sizeof(SDL_Renderer__flags[0]);
-
-    const int window_width = 600;
-    const int window_height = 400;
-
     errno = 0;
     
+    /**
+     * Defines a structure containing default values for window properties and SDL initialization flags.
+     */
+    struct {
+        const char* title; // Window title
+        const int width; // Window width
+        const int height; // Window height
+        
+        const char* SDL_Init__flags[3]; // Subsystems to initialize by default. They will appear in the file
+        const char* SDL_Window__flags[1];
+        const char* SDL_Renderer__flags[1];
+        
+    } default_settings = {
+        "Sancho Panza Framework",
+        600,
+        400,
+        {"SDL_INIT_VIDEO", "SDL_INIT_EVENTS", "SDL_INIT_TIMER"},
+        {"SDL_WINDOW_SHOWN"},
+        {"SDL_RENDERER_ACCELERATED"}
+    };
+    
     /* ================================================ */
-    /* =========== Creating the root object =========== */
-    /* ===== as a container for dependent elements ==== */
-    /* ================================================ */
-
+    
+    /**
+     * It initializes a JSON object (root) to serve as the main container for the configuration data.
+    */
     if ((root = cJSON_CreateObject()) == NULL) {
         /* Most likely it's a memory allocation error */
 
         goto END;
     }
-
-    /* ================================================ */
-    /* ============== Creating an array =============== */
-    /* ========== containing SDL_Init flags =========== */
-    /* ================================================ */
     
+    /* ================================================ */
+
+    /**
+     * Creates a JSON array for SDL initialization flags and populates it with default values.
+     */
     if ((flags = cJSON_CreateArray()) == NULL) {
         /* Most likely it's a memory allocation error */
-
         goto END;
     }
 
@@ -399,54 +410,51 @@ static int create_config_file(void) {
     cJSON_AddItemToObject(root, "SDL_Init__flags", flags);
     
     /* Populating the array with values */
-    for (i = 0; i < size; i++) {
+    for (size_t i = 0; i < sizeof(default_settings.SDL_Init__flags) / sizeof(default_settings.SDL_Init__flags[0]); i++) {
 
-        if ((flag = cJSON_CreateString(SDL_Init__flags[i])) == NULL) {
+        if ((flag = cJSON_CreateString(default_settings.SDL_Init__flags[i])) == NULL) {
             goto END;
         }
 
         cJSON_AddItemToArray(flags, flag);
     }
-
-    /* ================================================ */
-    /* =========== Creating a window object =========== */
+    
     /* ================================================ */
 
+    /**
+     * Creates a JSON object for window properties and populates it with the title, width, and height.
+     */
     if ((window = cJSON_CreateObject()) == NULL) {
         /* Most likely it's a memory allocation error */
         
         goto END;
     }
     
-    /* ================================================ */
-    /* ========= Populating the window object ========= */
-    /* ================= with values ================== */
-    /* ================================================ */
-    
     /* Window title */
-    flag = cJSON_CreateString("Sancho Panza");
+    flag = cJSON_CreateString(default_settings.title);
     cJSON_AddItemToObject(window, "title", flag);
     
     /* Window width */
-    flag = cJSON_CreateNumber(window_width);
+    flag = cJSON_CreateNumber(default_settings.width);
     cJSON_AddItemToObject(window, "width", flag);
     
     /* Window height */
-    flag = cJSON_CreateNumber(window_height);
+    flag = cJSON_CreateNumber(default_settings.height);
     cJSON_AddItemToObject(window, "height", flag);
-
-    /* ================================================ */
-    /* ====== Creating an array of window flags ======= */
+    
     /* ================================================ */
 
+    /**
+     * Creates additional arrays for window and renderer flags, populating them with default values.
+     */
     if ((flags = cJSON_CreateArray()) == NULL) {
         /* Most likely it's a memory allocation error */
         goto END;
     }
 
-    for (i = 0; i < w_size; i++) {
+    for (size_t i = 0; i < sizeof(default_settings.SDL_Window__flags) / sizeof(default_settings.SDL_Window__flags[0]); i++) {
 
-        if ((flag = cJSON_CreateString(SDL_Window__flags[i])) == NULL) {
+        if ((flag = cJSON_CreateString(default_settings.SDL_Window__flags[i])) == NULL) {
             goto END;
         }
 
@@ -455,19 +463,17 @@ static int create_config_file(void) {
 
     /* Add window flags to the window object */
     cJSON_AddItemToObject(window, "SDL_Window__flags", flags);
-
-    /* ================================================ */
-    /* ===== Creating an array of renderer flags ====== */
-    /* ================================================ */
+    
+    /* ======================== */
 
     if ((flags = cJSON_CreateArray()) == NULL) {
         /* Most likely it's a memory allocation error */
         goto END;
     }
 
-    for (i = 0; i < r_size; i++) {
+    for (size_t i = 0; i < sizeof(default_settings.SDL_Renderer__flags) / sizeof(default_settings.SDL_Renderer__flags[0]); i++) {
 
-        if ((flag = cJSON_CreateString(SDL_Renderer__flags[i])) == NULL) {
+        if ((flag = cJSON_CreateString(default_settings.SDL_Renderer__flags[i])) == NULL) {
             goto END;
         }
 
@@ -477,39 +483,48 @@ static int create_config_file(void) {
     /* Add renderer flags to the window object */
     cJSON_AddItemToObject(window, "SDL_Renderer__flags", flags);
 
-    /* ================================ */
+    /* ================================================ */
 
-    /* Add window object to the root object */
+    /**
+     * The window object is added to the root object.
+     */
     cJSON_AddItemToObject(root, "Window", window);
 
     /* ================================================ */
-    /* ============= Writing to the file ============== */
-    /* ================================================ */
 
-    /* Converting to `char*` */
+    /**
+     * The JSON object is converted to a string format.
+     */
     if ((text = cJSON_Print(root)) == NULL) {
         goto END;
     }
-
+    
+    /**
+     * The string is written to a file named `.config.json`. If the writing process fails, the function will handle the error appropriately.
+     */
     if (write_to_file(".config.json", text) != 0) {
         goto END;
     }
-
+    
     /* ================================================ */
-    /* =============== Freeing memory ================= */
-    /* ================================================ */
-
+    
+    /**
+     * Allocated memory for JSON objects and strings is freed before returning from the function to prevent memory leaks.
+     */
     free(text);
     cJSON_Delete(root);
 
     /* ================ */
 
     return 0;
-
+    
+    /**
+     * If any step fails (e.g., memory allocation, file writing), the function jumps to the error handling section, where it logs the error and cleans up resources.
+     */
     END:
     {
         #ifdef STRICT
-            print_error(stderr, "%s (%s%s%s)\n", "unable to create a default configuration file", RED, errno != 0 ? strerror(errno) : "", WHITE);
+            error(stderr, "%s (%s%s%s)\n", "unable to create a default configuration file", RED, errno != 0 ? strerror(errno) : "", WHITE);
         #endif
 
         free(text);
@@ -655,102 +670,6 @@ void print_message(FILE* stream, Message_Type msg_type, const char* format, ...)
 
 /* ================================================================ */
 
-void print_error(FILE* stream, const char* format, ...) {
-
-    char buffer[BUFFER_SIZE];
-    size_t bytes_written;
-
-    va_list args;
-    va_start(args, format);
-
-    /* ================ */
-
-    stream = (!stream) ? stderr : stream;
-
-    if (((bytes_written = snprintf(buffer, sizeof(buffer), "%s%s%s: ", RED, "Error", WHITE)) < 0) || (bytes_written >= sizeof(buffer))) {
-        fprintf(stream, "%s%s%s: error formatting error message\n", RED, "Error", WHITE);
-
-        return ;
-    }
-
-    if ((bytes_written = vsnprintf(buffer + bytes_written, sizeof(buffer) - bytes_written, format, args) < 0) || (bytes_written >= sizeof(buffer) - bytes_written)) {
-        fprintf(stream, "%s%s%s: error formatting error message\n", RED, "Error", WHITE);
-
-        return ;
-    }
-
-    fprintf(stream, "%s", buffer);
-    fflush(stream);
-
-    va_end(args);
-}
-
-/* ================================================================ */
-
-void print_warning(FILE* stream, const char* format, ...) {
-
-    char buffer[BUFFER_SIZE];
-    size_t bytes_written;
-
-    va_list args;
-    va_start(args, format);
-
-    /* ================ */
-
-    stream = (!stream) ? stdout : stream;
-
-    if (((bytes_written = snprintf(buffer, sizeof(buffer), "%s%s%s: ", YELLOW, "Warning", WHITE)) < 0) || (bytes_written >= sizeof(buffer))) {
-        fprintf(stream, "%s%s%s: error formatting error message\n", RED, "Error", WHITE);
-
-        return ;
-    }
-
-    if ((bytes_written = vsnprintf(buffer + bytes_written, sizeof(buffer) - bytes_written, format, args) < 0) || (bytes_written >= sizeof(buffer) - bytes_written)) {
-        fprintf(stream, "%s%s%s: error formatting error message\n", RED, "Error", WHITE);
-
-        return ;
-    }
-
-    fprintf(stream, "%s", buffer);
-    fflush(stream);
-
-    va_end(args);
-}
-
-/* ================================================================ */
-
-void print_success(FILE* stream, const char* format, ...) {
-
-    char buffer[BUFFER_SIZE];
-    size_t bytes_written;
-
-    va_list args;
-    va_start(args, format);
-
-    /* ================ */
-
-    stream = (!stream) ? stdout : stream;
-
-    if (((bytes_written = snprintf(buffer, sizeof(buffer), "%s%s%s: ", GREEN, "Success", WHITE)) < 0) || (bytes_written >= sizeof(buffer))) {
-        fprintf(stream, "%s%s%s: error formatting error message\n", RED, "Error", WHITE);
-
-        return ;
-    }
-
-    if ((bytes_written = vsnprintf(buffer + bytes_written, sizeof(buffer) - bytes_written, format, args) < 0) || (bytes_written >= sizeof(buffer) - bytes_written)) {
-        fprintf(stream, "%s%s%s: error formatting error message\n", RED, "Error", WHITE);
-
-        return ;
-    }
-
-    fprintf(stream, "%s", buffer);
-    fflush(stream);
-
-    va_end(args);
-}
-
-/* ================================================================ */
-
 int JSON_parse(const char* buffer, cJSON** root) {
 
     const char* error_ptr;
@@ -831,7 +750,7 @@ int extract_JSON_data(const cJSON* root, const char* name, JSON_Entity type, cJS
     if ((type < 0) || (type > size)) {
 
         #ifdef STRICT
-            print_error(stderr, "unsupported type\n");
+            error(stderr, "unsupported type\n", "");
         #endif
 
         return -1;
@@ -949,7 +868,7 @@ int SP_init(App** app) {
      * The function retrieves window options from the parsed JSON data using `get_window_options`. If this fails, an error message is printed to `stderr`, and the function jumps to the error handling section.
      */
     if (get_window_options(root, &opts) != 0) {
-        error(stderr, "Initialization failed. Unable to get window flags\n");
+        error(stderr, "Initialization failed. Unable to get SDL_Window flags\n", "");
         
         goto END;
     }

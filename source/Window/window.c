@@ -15,7 +15,7 @@ Window* Window_new(const char* title, int w, int h, Uint32 wflags, Uint32 rflags
     if ((new_window = calloc(1, sizeof(struct window))) == NULL) {
         
         #ifdef STRICT
-            print_error(stderr, "%s\n", strerror(errno));
+            error(stderr, "%s\n", strerror(errno), "");
         #endif
 
         /* ======== */
@@ -29,7 +29,7 @@ Window* Window_new(const char* title, int w, int h, Uint32 wflags, Uint32 rflags
     if ((new_window->w = SDL_CreateWindow((title != NULL) ? title : "Sancho-Panza", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, wflags)) == NULL) {
 
         #ifdef STRICT
-            print_error(stderr, "[%s%s%s] %s\n", BLUE, "SDL_CreateWindow", WHITE, strerror(errno));
+            error(stderr, "[%s%s%s] %s\n", BLUE, "SDL_CreateWindow", WHITE, strerror(errno));
         #endif
 
         free(new_window);
@@ -45,7 +45,7 @@ Window* Window_new(const char* title, int w, int h, Uint32 wflags, Uint32 rflags
     if ((new_window->r = SDL_CreateRenderer(new_window->w, -1, rflags)) == NULL) {
 
         #ifdef STRICT
-            print_error(stderr, "[%s%s%s] %s\n", BLUE, "SDL_CreateRenderer", WHITE, strerror(errno));
+            error(stderr, "[%s%s%s] %s\n", BLUE, "SDL_CreateRenderer", WHITE, strerror(errno));
         #endif
 
         SDL_DestroyWindow(new_window->w);
@@ -56,7 +56,7 @@ Window* Window_new(const char* title, int w, int h, Uint32 wflags, Uint32 rflags
     }
 
     #ifdef STRICT
-        print_success(stderr, "%s\n", "window has been created");
+        success(stderr, "%s\n", "window has been created", "");
     #endif
 
     /* ======== */
@@ -79,7 +79,7 @@ int Window_destroy(Window** w) {
     *w = NULL;
 
     #ifdef STRICT
-        print_success(stdout, "window has been destroyed\n");
+        success(stdout, "window has been destroyed\n", "");
     #endif
 
     /* ======== */

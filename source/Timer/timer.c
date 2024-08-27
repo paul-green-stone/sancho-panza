@@ -11,7 +11,7 @@ Timer* Timer_new(double t) {
     if ((timer = calloc(1, sizeof(struct timer))) == NULL) {
 
         #ifdef STRICT
-            print_error(stderr, "in %s%s%s (%s%s%s)\n", BLUE, __func__, WHITE, RED, strerror(errno), WHITE);
+            error(stderr, "in %s%s%s (%s%s%s)\n", BLUE, __func__, WHITE, RED, strerror(errno), WHITE);
         #endif
 
         /* ======== */
@@ -38,7 +38,7 @@ int Timer_destroy(Timer** t) {
     *t = NULL;
 
     #ifdef STRICT
-        print_success(stdout, "timer has been destroyed\n");
+        success(stdout, "timer has been destroyed\n", "");
     #endif
 
     /* ======== */

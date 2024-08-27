@@ -1,7 +1,7 @@
 {
 	"SDL_Init__flags":	["SDL_INIT_VIDEO", "SDL_INIT_EVENTS", "SDL_INIT_TIMER"],
 	"Window":	{
-		"title":	"Sancho Panza",
+		"title":	"Sancho Panza Framework",
 		"width":	600,
 		"height":	400,
 		"SDL_Window__flags":	["SDL_WINDOW_SHOWN"],

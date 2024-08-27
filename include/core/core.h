@@ -40,17 +40,17 @@ typedef struct application App;
  * The `error` macro is a convenient way to print error messages using the `print_message` function.
  * It prepends the message with a red "Error:" prefix and sends the output to the specified stream (usually `stderr`).
  */
-#define error(stream, format, ...) print_message((stream), ERROR, (format), ##__VA_ARGS__)
+#define error(stream, format, ...) print_message((stream), ERROR, (format), __VA_ARGS__)
 
 /**
  * The `warning` macro is used to print warning messages using the `print_message` function. It prepends the message with a yellow "Warning:" prefix and sends the output to the specified stream (usually `stdout`).
  */
-#define warning(stream, format, ...) print_message((stream), WARNING, (format), ##__VA_ARGS__)
+#define warning(stream, format, ...) print_message((stream), WARNING, (format), __VA_ARGS__)
 
 /**
  * The `success` macro is used to print success messages using the `print_message` function. It prepends the message with a green "Success:" prefix and sends the output to the specified stream (usually stdout).
  */
-#define success(stream, format, ...) print_message((stream), SUCCESS, (format), ##__VA_ARGS__)
+#define success(stream, format, ...) print_message((stream), SUCCESS, (format), __VA_ARGS__)
 
 /* ================================================================ */
 
@@ -79,14 +79,6 @@ extern int read_file2buffer(const char* name, char** buffer);
 
 /* ================================================================ */
 
-extern void print_error(FILE* stream, const char* format, ...);
-
-/* ================================================================ */
-
-extern void print_warning(FILE* stream, const char* format, ...);
-
-/* ================================================================ */
-
 /**
  * The `print_message` function prints a formatted message to the specified output stream.
  * It prepends the message with a colored prefix indicating the message type ("Error:", "Warning:", or "Success:") and resets the text color after the message.
@@ -100,10 +92,6 @@ extern void print_warning(FILE* stream, const char* format, ...);
  * @return None.
  */
 extern void print_message(FILE* stream, Message_Type msg_type, const char* format, ...);
-
-/* ================================================================ */
-
-extern void print_success(FILE* stream, const char* format, ...);
 
 /* ================================================================ */
 
